@@ -67,7 +67,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     # Capturar a tela onde a palavra "Visitar" deve aparecer
     screenshot_filename = f'screenshot_visitar{linha}.png'
-    screenshot = pa.screenshot(region=(959, 486, 205, 60))  # Ajuste a região conforme necessário
+    screenshot = pa.screenshot(region=(1720,835,205,60))  # Ajuste a região conforme necessário
     screenshot.save(screenshot_filename)
 
     # Ler a imagem
@@ -84,7 +84,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     if "Visitar" in extracted_text:
         print(f"'Visitar' encontrado na linha {linha}, prosseguindo.")
     else:
-        print(f"'Visitar' não encontrado na linha {linha}, pintando de laranja e pulando para a próxima linha.")
+        print(f"'Visitar' não encontrado na linha {linha}, eu achei {extracted_text} pintando de laranja e pulando para a próxima linha.")
         pintarDeLaranja(linha)  # Pinta a linha de laranja
         continue  # Vai para a próxima linha
 

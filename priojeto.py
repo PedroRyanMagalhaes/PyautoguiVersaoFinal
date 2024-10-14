@@ -8,7 +8,6 @@ import numpy as np
 from openpyxl.styles import PatternFill
 
 
-
 wb = openpyxl.load_workbook('20Setembro.xlsx')
 sheet = wb.active
 
@@ -28,34 +27,28 @@ def pintarDeVermelho(linha):
 # Mês esperado vai ser inserido aqui 
 numeroEsperado = "13517592429"
 
-
 comecoLinha = 4
 finalLinha = 5
 
-  #mudou a tela
+# Muda a tela
 pa.hotkey('alt', 'tab')
 time.sleep(0.5)
 
 with open ('telefone.txt', 'w') as f:
-    for linha in range (comecoLinha, finalLinha + 1):
-       telefone = obterTelefone(linha)
-       f.write (f"linha {linha}, Telefone {telefone}\n")
+    for linha in range(comecoLinha, finalLinha + 1):
+        telefone = obterTelefone(linha)
+        f.write(f"linha {linha}, Telefone {telefone}\n")
 
 for linha in range(comecoLinha, finalLinha + 1):
     telefone = obterTelefone(linha)  
     pyperclip.copy(telefone)  
 
-  
-
-    #clicou no lugar para da ctrl a 
-    pa.click(278,77)
+    # Clica no lugar para dar 'ctrl + a'
+    pa.click(278, 77)
     pa.hotkey('ctrl', 'a')
     time.sleep(0.5)
 
-         
-    # O código abaixo também deve estar indentado para que faça parte do loop
-    
-    time.sleep(0.5)
+    # Cola o telefone
     pa.hotkey('ctrl', 'v')
     pa.press('enter')
     time.sleep(2)
@@ -76,23 +69,21 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.click(1589, 1018)
     time.sleep(2)
 
-    # Ler número que está 
-    screenshotNome = f'screenshotLinha{linha}.png'  # Nomeia o screenshot com base na linha
+    # Ler o número que está visível na tela
+    screenshot_filename = f'screenshot_linha_{linha}.png'  # Nomeia o screenshot com base na linha
     screenshot = pa.screenshot(region=(959, 486, 205, 60))
-    screenshot.save(screenshotNome)
-   
+    screenshot.save(screenshot_filename)
+    print(f"Screenshot salva: {screenshot_filename}")
 
     # Ler a imagem
-    img = cv2.imread('screenshot.png')
+    img = cv2.imread(screenshot_filename)
 
     # Tratar imagem
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
 
-    # Extrai texto da imagem
+    # Extrair texto da imagem
     extracted_text = pytesseract.image_to_string(img)
-
-   
 
     # Verifica se é o mês correto
     if numeroEsperado in extracted_text:

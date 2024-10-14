@@ -26,11 +26,11 @@ def pintarDeVermelho(linha):
         cell.fill = vermelho
 
 # Mês esperado vai ser inserido aqui 
-numeroEsperado = "ZF | 063530300"
+numeroEsperado = "13517592429"
 
 
 comecoLinha = 4
-finalLinha = 100
+finalLinha = 5
 
   #mudou a tela
 pa.hotkey('alt', 'tab')
@@ -77,8 +77,10 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(2)
 
     # Ler número que está 
+    screenshotNome = f'screenshotLinha{linha}.png'  # Nomeia o screenshot com base na linha
     screenshot = pa.screenshot(region=(959, 486, 205, 60))
-    screenshot.save('screenshot.png')
+    screenshot.save(screenshotNome)
+   
 
     # Ler a imagem
     img = cv2.imread('screenshot.png')

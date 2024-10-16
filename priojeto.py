@@ -25,10 +25,10 @@ def pintarDeVermelho(linha):
         cell.fill = vermelho
 
 # Mês esperado vai ser inserido aqui 
-numeroEsperado = "13517592429"
+numeroEsperado = "Cédigo: 1970"
 
 comecoLinha = 4
-finalLinha = 5
+finalLinha = 6
 
 # Muda a tela
 pa.hotkey('alt', 'tab')
@@ -51,26 +51,26 @@ for linha in range(comecoLinha, finalLinha + 1):
     # Cola o telefone
     pa.hotkey('ctrl', 'v')
     pa.press('enter')
-    time.sleep(2)
+    time.sleep(1)
 
     # Clicar nos 3 pontinhos na versão final 
     pa.click(454, 259)
-    time.sleep(2)
+    time.sleep(0.5)
 
     # Clicar em detalhes 
     pa.click(636, 403)
-    time.sleep(2)
+    time.sleep(1)
 
     # Clicar nos três pontinhos novamente 
     pa.click(1774, 854)
-    time.sleep(2)
+    time.sleep(4)
 
     # Clicar em faturas
     pa.click(1589, 1018)
-    time.sleep(2)
+    time.sleep(1)
 
     # Ler o número que está visível na tela
-    screenshot_filename = f'screenshot_linha_{linha}.png'  # Nomeia o screenshot com base na linha
+    screenshot_filename = f'screenshot{linha}.png'  # Nomeia o screenshot com base na linha
     screenshot = pa.screenshot(region=(959, 486, 205, 60))
     screenshot.save(screenshot_filename)
     print(f"Screenshot salva: {screenshot_filename}")

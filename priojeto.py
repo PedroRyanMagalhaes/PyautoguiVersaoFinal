@@ -25,7 +25,7 @@ def pintarDeVermelho(linha):
         cell.fill = vermelho
 
 # Mês esperado vai ser inserido aqui 
-numeroEsperado = "13517592429"
+numeroEsperado = "Cisne -"
 
 comecoLinha = 4
 finalLinha = 5
@@ -62,7 +62,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(2)
 
     # Clicar nos três pontinhos novamente 
-    pa.click(1774, 854)
+    pa.click(1776,793)
     time.sleep(2)
 
     # Clicar em faturas

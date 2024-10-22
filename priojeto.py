@@ -79,7 +79,7 @@ def verificarMesAlternativo(linha, mesEsperado):
 def verificarStatusPagamento(linha):
     try:
         screenshot_status = f'{linha}printPagamento.png'
-        screenshot = pa.screenshot(region=(1044, 884, 70, 40))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(1044, 884, 100, 40))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -159,10 +159,10 @@ def verificarFaturamento(linha):
         return False
 
 # Função para verificar "faturamento" em uma coordenada alternativa
-def verificarFauturamentoAlternativo(linha):
+def verificarFaturamentoAlternativo(linha):
     try:
         screenshot_faturamento_alt = f'{linha}printFaturamentoAlternativo.png'
-        screenshot = pa.screenshot(region=(402,536, 400, 50))  # Ajuste essa coordenada para a nova região
+        screenshot = pa.screenshot(region=(472,544, 400, 50))  # Ajuste essa coordenada para a nova região
         screenshot.save(screenshot_faturamento_alt)
 
         img = cv2.imread(screenshot_faturamento_alt)
@@ -220,73 +220,68 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     # Clicar em detalhes 
     pa.click(451, 485)
-    time.sleep(3)
+    time.sleep(5)
 
-    # Verificar "faturamento" após clicar em detalhes
-    if not verificarFaturamento(linha):
-        pa.scroll(-500)  # Ajuste o valor do scroll conforme necessário
-        time.sleep(1)
-
-        pa.click(897,554)
+  # Verificar "faturamento" após clicar em detalhes
+    if verificarFaturamento(linha):
+    # Se "faturamento" for encontrado na primeira tentativa, continuar fluxo
+        pa.click(899, 651)  # Clicar nos três pontinhos
         time.sleep(2)
 
-        pa.click(478,592)
-        time.sleep(2)
+        pa.click(470, 659)  # Clicar em faturas
+        time.sleep(1)
+    
 
-        pa.scroll(500)  # Ajuste o valor do scroll conforme necessário
+    else:
+        pa.scroll(-500)  # Scroll para baixo
         time.sleep(1)
 
-        pa.hotkey('alt', 'left')
-        time.sleep(0.5)  
-        #voltar
-        pa.hotkey('alt', 'left')
-        time.sleep(1) 
+    # Se "faturamento" não for encontrado, verificar na coordenada alternativa
+        if verificarFaturamentoAlternativo(linha):
+        # Se encontrado na coordenada alternativa, realizar scroll e cliques adicionais
 
+            pa.click(897, 554)  # Clique em nova coordenada
+            time.sleep(2)
 
-        # Se "faturamento" não for encontrado, verifica a segunda coordenada
-        if not verificarFauturamentoAlternativo(linha):
+            pa.click(478, 592)  # Outro clique
+            time.sleep(2)
+
+            pa.scroll(500)  # Scroll para cima
+            time.sleep(1)
+        
+
+        else:
+        # Se "faturamento" não for encontrado em nenhuma das coordenadas, pular linha
             print(f"'Faturamento' não encontrado na linha {linha}. Pulando para a próxima.")
-            continue  # Pula para a próxima linha se nenhuma das verificações passar
+         # Pula para a próxima linha se nenhuma verificação passar
 
-    pa.scroll(500)  # Certifique-se de fazer o scroll up antes da captura de tela
-    time.sleep(1)
-    # Clicar nos três pontinhos novamente
-    pa.click(899, 651)
-    time.sleep(2)
-
-    # Clicar em faturas
-    pa.click(470, 659)
-    time.sleep(1)
-
-
-    # Verificar o mês capturado na tela
+# Verificar o mês capturado na tela
     if verificarMes(linha, mesEsperado):
-        # Verificar o status de pagamento
+    # Verificar o status de pagamento
         status = verificarStatusPagamento(linha)
         if status == "pago":
             pintarDeVerde(linha)
         elif status == "atrasada":
             pintarDeVermelho(linha)
     else:
-        # Se o mês não for o esperado, tenta verificar em uma nova coordenada
+    # Se o mês não for o esperado, tenta verificar em uma nova coordenada
         if verificarMesAlternativo(linha, mesEsperado):
-            # Verificar o status de pagamento em nova coordenada
+        # Verificar o status de pagamento na coordenada alternativa
             status = verificarStatusPagamentoAlternativo(linha)
             if status == "pago":
                 pintarDeVerde(linha)
-            elif status == "atrasada":
-                pintarDeVermelho(linha)
+        elif status == "atrasada":
+            pintarDeVermelho(linha)
         else:
-            # Se o mês ainda não for o esperado, pinta a linha de laranja
+        # Se o mês ainda não for o esperado, pinta a linha de laranja
             pintarDeLaranja(linha)
-    
-     # voltar
+
+# Voltar para a tela anterior duas vezes
     pa.hotkey('alt', 'left')
-    time.sleep(0.5)  
-    #voltar
+    time.sleep(0.5)
     pa.hotkey('alt', 'left')
-    time.sleep(1) 
- 
+    time.sleep(3)
 
 # Salvar o arquivo Excel atualizado
 wb.save("20SetembroAtualizada.xlsx")
+

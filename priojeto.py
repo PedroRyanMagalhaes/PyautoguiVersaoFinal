@@ -7,11 +7,18 @@ import pyperclip
 import pytesseract
 import cv2
 from openpyxl.styles import PatternFill
+import os
 
 
 # Carrega a planilha
 wb = openpyxl.load_workbook('out1.21.xlsx')
 sheet = wb.active
+
+def criarPastaParaLinha(linha):
+    pasta_ = f'prints{linha}'
+    if not os.path.exists(pasta_):
+        os.makedirs(pasta_)
+    return pasta_
 
 def verificarStatus(linha):
     status = verificarStatusPagamento(linha) or verificarStatusPagamentoAlternativo(linha)
@@ -40,8 +47,9 @@ def pintarDeLaranja(linha):
 # Função para verificar o mês
 def verificarMes(linha, mesEsperado):
     try:
-        screenshot_mes = f'{linha}printMes.png'
-        screenshot = pa.screenshot(region=(431, 883, 70, 40))  # Ajuste a região conforme necessário
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_mes = os.path.join(pasta_, f'{linha}_printMes.png')
+        screenshot = pa.screenshot(region=(431, 883, 70, 60))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -61,8 +69,9 @@ def verificarMes(linha, mesEsperado):
 # Função para verificar o mês em uma nova coordenada
 def verificarMesAlternativo(linha, mesEsperado):
     try:
-        screenshot_mes = f'{linha}printMesAlternativo.png'
-        screenshot = pa.screenshot(region=(433, 971, 70, 50))  # Nova região
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_mes = os.path.join(pasta_, f'{linha}_printMesAlternativo.png')
+        screenshot = pa.screenshot(region=(433, 971, 70, 80))  # Nova região
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -82,7 +91,8 @@ def verificarMesAlternativo(linha, mesEsperado):
 # Função para verificar se está "pago" ou "atrasada"
 def verificarStatusPagamento(linha):
     try:
-        screenshot_status = f'{linha}printPagamento.png'
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_status = os.path.join(pasta_, f'{linha}_printPagamento.png')
         screenshot = pa.screenshot(region=(1044, 884, 100, 40))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
@@ -111,8 +121,9 @@ def verificarStatusPagamento(linha):
 # Função para verificar o status de pagamento em uma nova coordenada
 def verificarStatusPagamentoAlternativo(linha):
     try:
-        screenshot_status = f'{linha}printPagamentoAlternativo.png'
-        screenshot = pa.screenshot(region=(1040,975, 100, 50))  # Ajuste a nova região conforme necessário
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_status = os.path.join(pasta_, f'{linha}_printPagamentAlternativo.png')
+        screenshot = pa.screenshot(region=(1040,975, 120, 50))  # Ajuste a nova região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -139,8 +150,9 @@ def verificarStatusPagamentoAlternativo(linha):
 
 def verificarFaturamento(linha):
     try:
-        screenshot_faturamento = f'{linha}printFaturamento.png'
-        screenshot = pa.screenshot(region=(408,640,400, 50))  # Ajuste essa coordenada para a região correta
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_faturamento = os.path.join(pasta_, f'{linha}_printFaturamento.png')
+        screenshot = pa.screenshot(region=(408,640,400,80))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_faturamento)
 
         img = cv2.imread(screenshot_faturamento)
@@ -165,8 +177,9 @@ def verificarFaturamento(linha):
 # Função para verificar "faturamento" em uma coordenada alternativa
 def verificarFaturamentoAlternativo(linha):
     try:
-        screenshot_faturamento_alt = f'{linha}printFaturamentoAlternativo.png'
-        screenshot = pa.screenshot(region=(472,544, 400, 50))  # Ajuste essa coordenada para a nova região
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_faturamento_alt = os.path.join(pasta_, f'{linha}_printFaturamentoAlt.png')
+        screenshot = pa.screenshot(region=(386,479, 400, 250))  # Ajuste essa coordenada para a nova região
         screenshot.save(screenshot_faturamento_alt)
 
         img = cv2.imread(screenshot_faturamento_alt)
@@ -191,14 +204,17 @@ def verificarFaturamentoAlternativo(linha):
 contador = 1
 
 def clicarTresPontos(imagem_tres_pontos, regiao=None):
-    global contador
+    
     # Aguarda um momento para garantir que a tela esteja pronta
     time.sleep(1)
+
+    pasta_ = criarPastaParaLinha(linha)
 
     # Captura a tela ou a região especificada
     screenshot = pa.screenshot(region=regiao)
 
-    nome_arquivo = f"{contador}trespontos.png"
+    nome_arquivo = os.path.join(pasta_, f"{linha}trespontos.png")
+
     screenshot.save(nome_arquivo)
     print(f"Captura de tela salva como {nome_arquivo}")
 
@@ -209,22 +225,24 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
         # Clica no centro da imagem encontrada
         pa.click(pa.center(posicao))
         print("Clicou nos três pontinhos.")
-        contador +=1
         return True
     else:
         print("Imagem dos três pontinhos não encontrada.")
         return False
     
 def clicarfaturas(imagem_faturas, regiao=None):
-    global contador
+    
     
     # Aguarda um momento para garantir que a tela esteja pronta
     time.sleep(1)
 
+    pasta_ = criarPastaParaLinha(linha)
+
     # Captura a tela ou a região especificada
     screenshot = pa.screenshot(region=regiao)
 
-    nome_arquivo = f"{contador}faturas.png"
+    nome_arquivo = os.path.join(pasta_, f"{linha}faturas.png")
+
     screenshot.save(nome_arquivo)
     print(f"Captura de tela salva como {nome_arquivo}")
 
@@ -235,7 +253,6 @@ def clicarfaturas(imagem_faturas, regiao=None):
         # Clica no centro da imagem encontrada
         pa.click(pa.center(posicao))
         print("Clicou em faturas.")
-        contador += 1
         return True
     else:
         print("Imagem dos faturas não encontrada.")
@@ -245,12 +262,12 @@ def clicarfaturas(imagem_faturas, regiao=None):
 # Mês esperado
 mesEsperado = "10"
 
-comecoLinha = 2
-finalLinha = 6
+comecoLinha = 28
+finalLinha = 100
 
 # Muda a tela
 pa.hotkey('alt', 'tab')
-time.sleep(0.5)
+time.sleep(0.3)
 
 with open('telefone.txt', 'w') as f:
     for linha in range(comecoLinha, finalLinha + 1):
@@ -267,7 +284,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     # Clica no lugar para dar 'ctrl + a'
     pa.click(587, 365)
     pa.hotkey('ctrl', 'a')
-    time.sleep(2)
+    time.sleep(0.5)
 
     # Cola o telefone
     pa.hotkey('ctrl', 'v')
@@ -276,27 +293,32 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     # Clicar nos 3 pontinhos
     pa.click(635, 433)
-    time.sleep(2)
+    time.sleep(1)
 
     # Clicar em detalhes 
     pa.click(451, 485)
-    time.sleep(5)
+    time.sleep(3.5)
 
   # Verificar "faturamento" após clicar em detalhes
     if verificarFaturamento(linha):
-        imagem_tres_pontos = 'imagemtrespontos.jpg'  # Substitua pelo caminho real da sua imagem
+        imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Substitua pelo caminho real da sua imagem
         regiao = (829, 612, 200, 200)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
     
     
         if clicarTresPontos(imagem_tres_pontos, regiao):
-            time.sleep(2)  # Aguardar um tempo após clicar nos três pontos
+            time.sleep(1)  # Aguardar um tempo após clicar nos três pontos
 
         # Clicar em faturas
-        imagem_faturas = 'imagemfaturas.jpg'  # Clicar em faturas
+        imagem_faturas = 'assets/imagemfaturas.jpg'  # Clicar em faturas
         regiao = (393, 623, 200, 200)
 
         if clicarfaturas(imagem_faturas, regiao):
-            time.sleep(2)
+            time.sleep(1)
+        #if not verificarFaturamento():
+       # verificarSaldo()
+        #pintar de laranja essa linha 
+        #volta para o começo do codigo
+        #clicar alt left 
     else:
         pa.scroll(-500)  # Scroll para baixo
         time.sleep(1)
@@ -305,11 +327,17 @@ for linha in range(comecoLinha, finalLinha + 1):
     if verificarFaturamentoAlternativo(linha):
         # Se encontrado na coordenada alternativa, realizar scroll e cliques adicionais
 
-            pa.click(897, 554)  # Clique em nova coordenada
-            time.sleep(2)
+            imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Clique em nova coordenada
+            regiao = (832, 483, 250, 250)
 
-            pa.click(478, 592)  # Outro clique
-            time.sleep(2)
+            if clicarTresPontos(imagem_tres_pontos, regiao):
+                time.sleep(1)
+
+            imagem_faturas = 'assets/imagemfaturas.jpg'  # Outro clique
+            regiao = (392, 493, 250, 300)
+
+            if clicarfaturas(imagem_faturas, regiao):
+                time.sleep(1)
 
             pa.scroll(500)  # Scroll para cima
             time.sleep(1)
@@ -350,7 +378,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     time.sleep(0.5)
     pa.hotkey('alt', 'left')
-    time.sleep(3)
+    time.sleep(2)
 
 # Salvar o arquivo Excel atualizado
 wb.save("out1.21Atualizada.xlsx")

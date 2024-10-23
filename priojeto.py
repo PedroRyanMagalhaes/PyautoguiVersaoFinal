@@ -1,19 +1,21 @@
-#falta implantar ler faturamento 
-#pa.scroll()
-#nao existem faturas para esse periodo
-#verica "saldo" 
+
 
 import openpyxl
-import pyautogui as pa
+import pyautogui as pa  
 import time
 import pyperclip
 import pytesseract
 import cv2
 from openpyxl.styles import PatternFill
 
+
 # Carrega a planilha
-wb = openpyxl.load_workbook('20Setembro.xlsx')
+wb = openpyxl.load_workbook('out1.21.xlsx')
 sheet = wb.active
+
+def verificarStatus(linha):
+    status = verificarStatusPagamento(linha) or verificarStatusPagamentoAlternativo(linha)
+    return status
 
 def obterTelefone(linha):
     return sheet[f'E{linha}'].value
@@ -22,11 +24,13 @@ def pintarDeVerde(linha):
     verde = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
     for cell in sheet[linha]:
         cell.fill = verde
+    
 
 def pintarDeVermelho(linha):
     vermelho = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
     for cell in sheet[linha]:
         cell.fill = vermelho
+    
 
 def pintarDeLaranja(linha):
     laranja = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
@@ -92,7 +96,7 @@ def verificarStatusPagamento(linha):
 
         if "paga" in extracted_text.lower():
             print(f"Status 'paga' encontrado na linha {linha}.")
-            return "pago"
+            return "paga"
         elif "atrasada" in extracted_text.lower():
             print(f"Status 'atrasada' encontrado na linha {linha}.")
             return "atrasada"
@@ -121,7 +125,7 @@ def verificarStatusPagamentoAlternativo(linha):
 
         if "paga" in extracted_text.lower():
             print(f"Status 'paga' encontrado na linha {linha}.")
-            return "pago"
+            return "paga"
         elif "atrasada" in extracted_text.lower():
             print(f"Status 'atrasada' encontrado na linha {linha}.")
             return "atrasada"
@@ -183,11 +187,65 @@ def verificarFaturamentoAlternativo(linha):
     except Exception as e:
         print(f"Ocorreu um erro ao verificar o 'faturamento' alternativo na linha {linha}: {str(e)}")
         return False
+    
+contador = 1
+
+def clicarTresPontos(imagem_tres_pontos, regiao=None):
+    global contador
+    # Aguarda um momento para garantir que a tela esteja pronta
+    time.sleep(1)
+
+    # Captura a tela ou a região especificada
+    screenshot = pa.screenshot(region=regiao)
+
+    nome_arquivo = f"{contador}trespontos.png"
+    screenshot.save(nome_arquivo)
+    print(f"Captura de tela salva como {nome_arquivo}")
+
+    # Verifica se a imagem dos três pontinhos está presente na captura
+    posicao = pa.locateOnScreen(imagem_tres_pontos, confidence=0.5, region=regiao)
+
+    if posicao is not None:
+        # Clica no centro da imagem encontrada
+        pa.click(pa.center(posicao))
+        print("Clicou nos três pontinhos.")
+        contador +=1
+        return True
+    else:
+        print("Imagem dos três pontinhos não encontrada.")
+        return False
+    
+def clicarfaturas(imagem_faturas, regiao=None):
+    global contador
+    
+    # Aguarda um momento para garantir que a tela esteja pronta
+    time.sleep(1)
+
+    # Captura a tela ou a região especificada
+    screenshot = pa.screenshot(region=regiao)
+
+    nome_arquivo = f"{contador}faturas.png"
+    screenshot.save(nome_arquivo)
+    print(f"Captura de tela salva como {nome_arquivo}")
+
+    # Verifica se a imagem dos faturas está presente na captura
+    posicao = pa.locateOnScreen(imagem_faturas, confidence=0.5, region=regiao)
+
+    if posicao is not None:
+        # Clica no centro da imagem encontrada
+        pa.click(pa.center(posicao))
+        print("Clicou em faturas.")
+        contador += 1
+        return True
+    else:
+        print("Imagem dos faturas não encontrada.")
+        return False
+
 
 # Mês esperado
-mesEsperado = "09"
+mesEsperado = "10"
 
-comecoLinha = 4
+comecoLinha = 2
 finalLinha = 6
 
 # Muda a tela
@@ -198,6 +256,8 @@ with open('telefone.txt', 'w') as f:
     for linha in range(comecoLinha, finalLinha + 1):
         telefone = obterTelefone(linha)
         f.write(f"linha {linha}, Telefone {telefone}\n")
+
+
 
 for linha in range(comecoLinha, finalLinha + 1):
     telefone = obterTelefone(linha)  
@@ -224,20 +284,25 @@ for linha in range(comecoLinha, finalLinha + 1):
 
   # Verificar "faturamento" após clicar em detalhes
     if verificarFaturamento(linha):
-    # Se "faturamento" for encontrado na primeira tentativa, continuar fluxo
-        pa.click(899, 651)  # Clicar nos três pontinhos
-        time.sleep(2)
-
-        pa.click(470, 659)  # Clicar em faturas
-        time.sleep(1)
+        imagem_tres_pontos = 'imagemtrespontos.jpg'  # Substitua pelo caminho real da sua imagem
+        regiao = (829, 612, 200, 200)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
     
+    
+        if clicarTresPontos(imagem_tres_pontos, regiao):
+            time.sleep(2)  # Aguardar um tempo após clicar nos três pontos
 
+        # Clicar em faturas
+        imagem_faturas = 'imagemfaturas.jpg'  # Clicar em faturas
+        regiao = (393, 623, 200, 200)
+
+        if clicarfaturas(imagem_faturas, regiao):
+            time.sleep(2)
     else:
         pa.scroll(-500)  # Scroll para baixo
         time.sleep(1)
 
     # Se "faturamento" não for encontrado, verificar na coordenada alternativa
-        if verificarFaturamentoAlternativo(linha):
+    if verificarFaturamentoAlternativo(linha):
         # Se encontrado na coordenada alternativa, realizar scroll e cliques adicionais
 
             pa.click(897, 554)  # Clique em nova coordenada
@@ -250,7 +315,7 @@ for linha in range(comecoLinha, finalLinha + 1):
             time.sleep(1)
         
 
-        else:
+    else:
         # Se "faturamento" não for encontrado em nenhuma das coordenadas, pular linha
             print(f"'Faturamento' não encontrado na linha {linha}. Pulando para a próxima.")
          # Pula para a próxima linha se nenhuma verificação passar
@@ -258,23 +323,28 @@ for linha in range(comecoLinha, finalLinha + 1):
 # Verificar o mês capturado na tela
     if verificarMes(linha, mesEsperado):
     # Verificar o status de pagamento
-        status = verificarStatusPagamento(linha)
-        if status == "pago":
+        status = verificarStatus(linha)
+        print(f"Status para a linha {linha}: {status}")
+        if status == "paga":
             pintarDeVerde(linha)
         elif status == "atrasada":
             pintarDeVermelho(linha)
+        else:
+            pintarDeLaranja(linha)
     else:
     # Se o mês não for o esperado, tenta verificar em uma nova coordenada
         if verificarMesAlternativo(linha, mesEsperado):
         # Verificar o status de pagamento na coordenada alternativa
             status = verificarStatusPagamentoAlternativo(linha)
-            if status == "pago":
+            print(f"Status alternativo para a linha {linha}: {status}")
+            if status == "paga":
                 pintarDeVerde(linha)
-        elif status == "atrasada":
-            pintarDeVermelho(linha)
+            elif status == "atrasada":
+                pintarDeVermelho(linha)
         else:
         # Se o mês ainda não for o esperado, pinta a linha de laranja
             pintarDeLaranja(linha)
+        
 
 # Voltar para a tela anterior duas vezes
     pa.hotkey('alt', 'left')
@@ -283,5 +353,5 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(3)
 
 # Salvar o arquivo Excel atualizado
-wb.save("20SetembroAtualizada.xlsx")
+wb.save("out1.21Atualizada.xlsx")
 

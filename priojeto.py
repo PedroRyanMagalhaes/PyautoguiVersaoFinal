@@ -1,6 +1,7 @@
 
 
 import openpyxl
+import datetime
 import pyautogui as pa  
 import time
 import pyperclip
@@ -11,8 +12,50 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out1.21.xlsx')
+wb = openpyxl.load_workbook('out1.21.200.xlsx')
 sheet = wb.active
+
+import pyautogui as pa
+import time
+
+import pyautogui as pa
+import time
+import os
+
+def esperar_carregamento(imagem_carregando, confiança=0.8, pasta_salvamento='capturas', max_tentativas=100):
+    """
+    Espera até que a imagem de carregamento não esteja mais na tela ou atinge o limite de tentativas.
+
+    :param imagem_carregando: Caminho para a imagem que representa o "carregando".
+    :param confiança: Nível de confiança para localizar a imagem na tela.
+    :param pasta_salvamento: Pasta onde as capturas de tela serão salvas.
+    :param max_tentativas: Número máximo de tentativas para encontrar a imagem.
+    :return: None
+    """
+
+    # Cria a pasta para salvar as capturas, se não existir
+
+    tentativas = 0
+
+    while tentativas < max_tentativas:
+        try:
+            posicao = pa.locateOnScreen(imagem_carregando, confidence=confiança)
+
+
+            if posicao is None:
+                print("Carregando saiu da tela, pode prosseguir.")
+                break
+            else:
+                print("Carregando ainda está na tela... (confiança = {:.2f})".format(confiança))
+                time.sleep(0.2)  # Verifica a cada 100 milissegundos
+                tentativas += 1  # Incrementa o contador de tentativas
+        except Exception as e:
+            print(f"Ocorreu um erro: {e}")
+            break  # Em caso de erro, saia do loop
+    
+    if tentativas >= max_tentativas:
+        print("Número máximo de tentativas alcançado. Saindo do loop.")
+
 
 def criarPastaParaLinha(linha):
     pasta_ = f'prints{linha}'
@@ -201,6 +244,33 @@ def verificarFaturamentoAlternativo(linha):
         print(f"Ocorreu um erro ao verificar o 'faturamento' alternativo na linha {linha}: {str(e)}")
         return False
     
+def verificarSaldo(linha):
+    try:
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_saldo = os.path.join(pasta_, f'{linha}_printSaldo.png')
+        screenshot = pa.screenshot(region=(400,640,400,100))  # Ajuste essa coordenada para a região correta
+        screenshot.save(screenshot_saldo)
+
+        img = cv2.imread(screenshot_saldo)
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+
+        extracted_text = pytesseract.image_to_string(thresh)
+        print(f"Texto extraído para saldo na linha {linha}: {extracted_text}")
+
+        if "saldo" in extracted_text.lower():
+            print(f"'Saldo' encontrado na linha {linha}.")
+            return True
+        else:
+            print(f"'Saldo' não encontrado na linha {linha}.")
+            return False
+
+    except Exception as e:
+        print(f"Ocorreu um erro ao verificar o 'saldo' na linha {linha}: {str(e)}")
+        return False
+
+    
 contador = 1
 
 def clicarTresPontos(imagem_tres_pontos, regiao=None):
@@ -218,8 +288,14 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
     screenshot.save(nome_arquivo)
     print(f"Captura de tela salva como {nome_arquivo}")
 
-    # Verifica se a imagem dos três pontinhos está presente na captura
-    posicao = pa.locateOnScreen(imagem_tres_pontos, confidence=0.5, region=regiao)
+    posicao = None
+
+    # Tenta localizar a imagem na tela
+    try:
+        posicao = pa.locateOnScreen(imagem_tres_pontos, confidence=0.5, region=regiao)
+    except Exception as e:
+        print(f"Erro ao tentar localizar a imagem: {e}")
+        return False  # Retorna False se ocorrer qualquer erro
 
     if posicao is not None:
         # Clica no centro da imagem encontrada
@@ -229,6 +305,9 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
     else:
         print("Imagem dos três pontinhos não encontrada.")
         return False
+   
+
+
     
 def clicarfaturas(imagem_faturas, regiao=None):
     
@@ -248,7 +327,7 @@ def clicarfaturas(imagem_faturas, regiao=None):
 
     # Verifica se a imagem dos faturas está presente na captura
     posicao = pa.locateOnScreen(imagem_faturas, confidence=0.5, region=regiao)
-
+    
     if posicao is not None:
         # Clica no centro da imagem encontrada
         pa.click(pa.center(posicao))
@@ -262,8 +341,12 @@ def clicarfaturas(imagem_faturas, regiao=None):
 # Mês esperado
 mesEsperado = "10"
 
-comecoLinha = 28
-finalLinha = 100
+
+comecoLinha = 145
+finalLinha = 175
+
+horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
+print(f"Processo iniciou às {horario_inicial}")
 
 # Muda a tela
 pa.hotkey('alt', 'tab')
@@ -284,41 +367,64 @@ for linha in range(comecoLinha, finalLinha + 1):
     # Clica no lugar para dar 'ctrl + a'
     pa.click(587, 365)
     pa.hotkey('ctrl', 'a')
-    time.sleep(0.5)
+    time.sleep(0.3)
 
     # Cola o telefone
     pa.hotkey('ctrl', 'v')
     pa.press('enter')
-    time.sleep(3)
+    time.sleep(0.5)
+    
+
+    esperar_carregamento('assets/carregando.jpg',0.5)
+    
 
     # Clicar nos 3 pontinhos
-    pa.click(635, 433)
-    time.sleep(1)
+    time.sleep(0.5)
+    resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
+    
+    if resultado:
+        time.sleep(0.3)
+    else:
+        pa.click(567,604)
+        resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
+        time.sleep(0.3)
+
+
 
     # Clicar em detalhes 
     pa.click(451, 485)
-    time.sleep(3.5)
+    time.sleep(0.5)
+    esperar_carregamento('assets/carregando.jpg',0.5)
+    time.sleep(2)
+
+    
+    if verificarSaldo(linha):
+            pintarDeLaranja(linha)
+            print(f'Saldo encontrado na linha {linha}. Linha pintada de laranja.')
+            pa.hotkey('alt', 'left')  # Voltar com Alt + Left
+            #time.sleep(2)
+            esperar_carregamento('assets/carregando.jpg',0.5)
+            continue  # Volta para o início do for
+    
+        
+
 
   # Verificar "faturamento" após clicar em detalhes
     if verificarFaturamento(linha):
         imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Substitua pelo caminho real da sua imagem
-        regiao = (829, 612, 200, 200)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
+        regiao = (829, 612, 200, 280)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
     
     
         if clicarTresPontos(imagem_tres_pontos, regiao):
-            time.sleep(1)  # Aguardar um tempo após clicar nos três pontos
+            time.sleep(0.5)  # Aguardar um tempo após clicar nos três pontos
 
         # Clicar em faturas
         imagem_faturas = 'assets/imagemfaturas.jpg'  # Clicar em faturas
         regiao = (393, 623, 200, 200)
 
         if clicarfaturas(imagem_faturas, regiao):
-            time.sleep(1)
-        #if not verificarFaturamento():
-       # verificarSaldo()
-        #pintar de laranja essa linha 
-        #volta para o começo do codigo
-        #clicar alt left 
+            time.sleep(0.5)
+         
     else:
         pa.scroll(-500)  # Scroll para baixo
         time.sleep(1)
@@ -328,16 +434,16 @@ for linha in range(comecoLinha, finalLinha + 1):
         # Se encontrado na coordenada alternativa, realizar scroll e cliques adicionais
 
             imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Clique em nova coordenada
-            regiao = (832, 483, 250, 250)
+            regiao = (832, 483, 250, 280)
 
             if clicarTresPontos(imagem_tres_pontos, regiao):
-                time.sleep(1)
+                time.sleep(0.5)
 
             imagem_faturas = 'assets/imagemfaturas.jpg'  # Outro clique
-            regiao = (392, 493, 250, 300)
+            regiao = (392, 493, 250, 380)
 
             if clicarfaturas(imagem_faturas, regiao):
-                time.sleep(1)
+                time.sleep(0.5)
 
             pa.scroll(500)  # Scroll para cima
             time.sleep(1)
@@ -372,14 +478,16 @@ for linha in range(comecoLinha, finalLinha + 1):
         else:
         # Se o mês ainda não for o esperado, pinta a linha de laranja
             pintarDeLaranja(linha)
+            print ("Pintei de laranja, verificar depois por favor")
         
 
 # Voltar para a tela anterior duas vezes
     pa.hotkey('alt', 'left')
     time.sleep(0.5)
     pa.hotkey('alt', 'left')
-    time.sleep(2)
+    #time.sleep(7)
+    esperar_carregamento('assets/carregando.jpg',0.5)
+    wb.save("out1.21.150.xlsx")
 
-# Salvar o arquivo Excel atualizado
-wb.save("out1.21Atualizada.xlsx")
-
+horario_final = datetime.datetime.now().strftime("%H:%M:%S")
+print(f"Processo finalizado para todas as linhas às {horario_final}")

@@ -343,7 +343,7 @@ mesEsperado = "10"
 
 
 comecoLinha = 145
-finalLinha = 175
+finalLinha = 165
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo iniciou às {horario_inicial}")

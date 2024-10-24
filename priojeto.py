@@ -82,10 +82,10 @@ def pintarDeVermelho(linha):
         cell.fill = vermelho
     
 
-def pintarDeLaranja(linha):
-    laranja = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
+def pintarDeAmarelo(linha):
+    amarelo = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
     for cell in sheet[linha]:
-        cell.fill = laranja
+        cell.fill = amarelo
 
 # Função para verificar o mês
 def verificarMes(linha, mesEsperado):
@@ -399,7 +399,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     
     if verificarSaldo(linha):
-            pintarDeLaranja(linha)
+            pintarDeAmarelo(linha)
             print(f'Saldo encontrado na linha {linha}. Linha pintada de laranja.')
             pa.hotkey('alt', 'left')  # Voltar com Alt + Left
             #time.sleep(2)
@@ -464,7 +464,7 @@ for linha in range(comecoLinha, finalLinha + 1):
         elif status == "atrasada":
             pintarDeVermelho(linha)
         else:
-            pintarDeLaranja(linha)
+            pintarDeAmarelo(linha)
     else:
     # Se o mês não for o esperado, tenta verificar em uma nova coordenada
         if verificarMesAlternativo(linha, mesEsperado):
@@ -474,11 +474,11 @@ for linha in range(comecoLinha, finalLinha + 1):
             if status == "paga":
                 pintarDeVerde(linha)
             elif status == "atrasada":
-                pintarDeVermelho(linha)
+                pintarDeAmarelo(linha)
         else:
         # Se o mês ainda não for o esperado, pinta a linha de laranja
-            pintarDeLaranja(linha)
-            print ("Pintei de laranja, verificar depois por favor")
+            pintarDeVermelho(linha)
+            print ("Pintei de vermelho, verificar depois por favor")
         
 
 # Voltar para a tela anterior duas vezes

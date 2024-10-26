@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out1.21.200.xlsx')
+wb = openpyxl.load_workbook('out1.21.220.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -43,10 +43,8 @@ def esperar_carregamento(imagem_carregando, confiança=0.8, pasta_salvamento='ca
 
 
             if posicao is None:
-                print("Carregando saiu da tela, pode prosseguir.")
                 break
             else:
-                print("Carregando ainda está na tela... (confiança = {:.2f})".format(confiança))
                 time.sleep(0.2)  # Verifica a cada 100 milissegundos
                 tentativas += 1  # Incrementa o contador de tentativas
         except Exception as e:
@@ -337,13 +335,33 @@ def clicarfaturas(imagem_faturas, regiao=None):
         print("Imagem dos faturas não encontrada.")
         return False
 
+def verificarLinhaNaoLocalizada(linha):
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_linhanaolocalizada = os.path.join(pasta_, f'{linha}_LinhaNaoLocalizada.png')
+        screenshot = pa.screenshot(region=(774,419,400,400))  # Ajuste essa coordenada para a região correta
+        screenshot.save(screenshot_linhanaolocalizada)
+
+        img = cv2.imread(screenshot_linhanaolocalizada)
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+
+        extracted_text = pytesseract.image_to_string(thresh)
+        print(f"Texto extraído na linha {linha}: {extracted_text}")
+
+        if ("linha não localizada" in extracted_text.lower() or 
+            "localizada" in extracted_text.lower() or 
+            "venda avulsa" in extracted_text.lower()):
+             print(f"Essa linha é não localizada")
+        else:
+            return False
 
 # Mês esperado
 mesEsperado = "10"
 
 
-comecoLinha = 145
-finalLinha = 165
+comecoLinha = 221
+finalLinha = 235
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo iniciou às {horario_inicial}")
@@ -387,9 +405,18 @@ for linha in range(comecoLinha, finalLinha + 1):
     else:
         pa.click(567,604)
         resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
-        time.sleep(0.3)
-
-
+        if resultado:
+            time.sleep(0.3)
+        else:
+            verificarLinhaNaoLocalizada(linha)
+            pintarDeVermelho(linha)
+            pa.hotkey('alt', 'left')
+            time.sleep(0.5)
+            print(f"Processamento da linha {linha} = linha nao localizada.")
+            time.sleep(0.5)
+            continue
+            
+            
 
     # Clicar em detalhes 
     pa.click(451, 485)
@@ -487,7 +514,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out1.21.150.xlsx")
+    wb.save("out1.21.235.xlsx")
 
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo finalizado para todas as linhas às {horario_final}")

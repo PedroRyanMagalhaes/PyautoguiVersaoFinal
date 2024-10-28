@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('outNova.xlsx.xlsx')
+wb = openpyxl.load_workbook('outNova.xlsx.====xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -451,6 +451,9 @@ for linha in range(comecoLinha, finalLinha + 1):
 
         if clicarfaturas(imagem_faturas, regiao):
             time.sleep(0.5)
+            pa.scroll(-500)
+            time.sleep(1)
+
          
     else:
         pa.scroll(-500)  # Scroll para baixo

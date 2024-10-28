@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('outNova.xlsx.xlsx')
+wb = openpyxl.load_workbook('out252.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -23,15 +23,6 @@ import time
 import os
 
 def esperar_carregamento(imagem_carregando, confiança=0.8, pasta_salvamento='capturas', max_tentativas=100):
-    """
-    Espera até que a imagem de carregamento não esteja mais na tela ou atinge o limite de tentativas.
-
-    :param imagem_carregando: Caminho para a imagem que representa o "carregando".
-    :param confiança: Nível de confiança para localizar a imagem na tela.
-    :param pasta_salvamento: Pasta onde as capturas de tela serão salvas.
-    :param max_tentativas: Número máximo de tentativas para encontrar a imagem.
-    :return: None
-    """
 
     # Cria a pasta para salvar as capturas, se não existir
 
@@ -232,10 +223,9 @@ def verificarFaturamentoAlternativo(linha):
         print(f"Texto extraído para faturamento na linha {linha} (alternativo): {extracted_text}")
 
         if "faturamento" in extracted_text.lower():
-            print(f"'Faturamento' encontrado na linha {linha}.")
+            print(f"'Faturamento' encontrado na linha Alt {linha}.")
             return True
         else:
-            print(f"'Faturamento' não encontrado na linha {linha}.")
             return False
 
     except Exception as e:
@@ -261,7 +251,6 @@ def verificarSaldo(linha):
             print(f"'Saldo' encontrado na linha {linha}.")
             return True
         else:
-            print(f"'Saldo' não encontrado na linha {linha}.")
             return False
 
     except Exception as e:
@@ -284,7 +273,6 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
     nome_arquivo = os.path.join(pasta_, f"{linha}trespontos.png")
 
     screenshot.save(nome_arquivo)
-    print(f"Captura de tela salva como {nome_arquivo}")
 
     posicao = None
 
@@ -321,7 +309,6 @@ def clicarfaturas(imagem_faturas, regiao=None):
     nome_arquivo = os.path.join(pasta_, f"{linha}faturas.png")
 
     screenshot.save(nome_arquivo)
-    print(f"Captura de tela salva como {nome_arquivo}")
 
     # Verifica se a imagem dos faturas está presente na captura
     posicao = pa.locateOnScreen(imagem_faturas, confidence=0.5, region=regiao)
@@ -360,11 +347,11 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "10"
 
 
-comecoLinha = 147
-finalLinha = 191
+comecoLinha = 252
+finalLinha = 260
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
-print(f"Processo iniciou às {horario_inicial}")
+
 
 # Muda a tela
 pa.hotkey('alt', 'tab')
@@ -390,7 +377,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     # Cola o telefone
     pa.hotkey('ctrl', 'v')
     pa.press('enter')
-    time.sleep(0.5)
+    time.sleep(0.3)
     
 
     esperar_carregamento('assets/carregando.jpg',0.5)
@@ -478,7 +465,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     else:
         # Se "faturamento" não for encontrado em nenhuma das coordenadas, pular linha
-            print(f"'Faturamento' não encontrado na linha {linha}. Pulando para a próxima.")
+            print(f"'Faturamento' não encontrado na linha alternativa {linha}.")
          # Pula para a próxima linha se nenhuma verificação passar
 
 # Verificar o mês capturado na tela
@@ -514,7 +501,9 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out1.21.290.xlsx")
+    wb.save("out.260.xlsx")
 
+print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")
+
 print(f"Processo finalizado para todas as linhas às {horario_final}")

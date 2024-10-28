@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out1.21.220.xlsx')
+wb = openpyxl.load_workbook('outNova.xlsx.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -360,8 +360,8 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "10"
 
 
-comecoLinha = 221
-finalLinha = 235
+comecoLinha = 147
+finalLinha = 191
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo iniciou às {horario_inicial}")
@@ -514,7 +514,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out1.21.235.xlsx")
+    wb.save("out1.21.290.xlsx")
 
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo finalizado para todas as linhas às {horario_final}")

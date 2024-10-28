@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('outNova.xlsx.====xlsx')
+wb = openpyxl.load_workbook('ago.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -90,7 +90,7 @@ def verificarMes(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_mes = os.path.join(pasta_, f'{linha}_printMes.png')
-        screenshot = pa.screenshot(region=(431, 883, 70, 60))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(393, 753, 110, 100))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -112,7 +112,7 @@ def verificarMesAlternativo(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_mes = os.path.join(pasta_, f'{linha}_printMesAlternativo.png')
-        screenshot = pa.screenshot(region=(433, 971, 70, 80))  # Nova região
+        screenshot = pa.screenshot(region=(393, 659, 100, 100))  # Nova região
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -134,7 +134,7 @@ def verificarStatusPagamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamento.png')
-        screenshot = pa.screenshot(region=(1044, 884, 100, 40))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(1034, 783, 120, 60))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -164,7 +164,7 @@ def verificarStatusPagamentoAlternativo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamentAlternativo.png')
-        screenshot = pa.screenshot(region=(1040,975, 120, 50))  # Ajuste a nova região conforme necessário
+        screenshot = pa.screenshot(region=(1035,687, 120, 60))  # Ajuste a nova região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -357,11 +357,11 @@ def verificarLinhaNaoLocalizada(linha):
             return False
 
 # Mês esperado
-mesEsperado = "10"
+mesEsperado = "08"
 
 
-comecoLinha = 147
-finalLinha = 191
+comecoLinha = 2
+finalLinha = 2
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo iniciou às {horario_inicial}")
@@ -401,7 +401,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
     
     if resultado:
-        time.sleep(0.3)
+        time.sleep(0.2)
     else:
         pa.click(567,604)
         resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
@@ -422,7 +422,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.click(451, 485)
     time.sleep(0.5)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    time.sleep(2)
+    time.sleep(1.5)
 
     
     if verificarSaldo(linha):
@@ -443,7 +443,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     
     
         if clicarTresPontos(imagem_tres_pontos, regiao):
-            time.sleep(0.5)  # Aguardar um tempo após clicar nos três pontos
+            time.sleep(0.2)  # Aguardar um tempo após clicar nos três pontos
 
         # Clicar em faturas
         imagem_faturas = 'assets/imagemfaturas.jpg'  # Clicar em faturas
@@ -451,6 +451,8 @@ for linha in range(comecoLinha, finalLinha + 1):
 
         if clicarfaturas(imagem_faturas, regiao):
             time.sleep(0.5)
+            pa.scroll(-500)
+            time.sleep(1)
             pa.scroll(-500)
             time.sleep(1)
 
@@ -475,7 +477,7 @@ for linha in range(comecoLinha, finalLinha + 1):
             if clicarfaturas(imagem_faturas, regiao):
                 time.sleep(0.5)
 
-            pa.scroll(500)  # Scroll para cima
+            pa.scroll(-500)  # Scroll para cima
             time.sleep(1)
         
 
@@ -487,7 +489,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 # Verificar o mês capturado na tela
     if verificarMes(linha, mesEsperado):
     # Verificar o status de pagamento
-        status = verificarStatus(linha)
+        status = verificarStatusPagamento(linha)
         print(f"Status para a linha {linha}: {status}")
         if status == "paga":
             pintarDeVerde(linha)
@@ -503,8 +505,10 @@ for linha in range(comecoLinha, finalLinha + 1):
             print(f"Status alternativo para a linha {linha}: {status}")
             if status == "paga":
                 pintarDeVerde(linha)
+                print('Pintei de verde')
             elif status == "atrasada":
                 pintarDeAmarelo(linha)
+                print('Pintei de amarelo')
         else:
         # Se o mês ainda não for o esperado, pinta a linha de laranja
             pintarDeVermelho(linha)
@@ -517,7 +521,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out1.21.290.xlsx")
+    wb.save("agoAtualizada.xlsx")
 
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo finalizado para todas as linhas às {horario_final}")

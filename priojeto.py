@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('ago.xlsx')
+wb = openpyxl.load_workbook('agoAtualizada.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -360,11 +360,11 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "08"
 
 
-comecoLinha = 2
-finalLinha = 2
+comecoLinha = 51
+finalLinha = 100
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
-print(f"Processo iniciou às {horario_inicial}")
+
 
 # Muda a tela
 pa.hotkey('alt', 'tab')
@@ -443,18 +443,16 @@ for linha in range(comecoLinha, finalLinha + 1):
     
     
         if clicarTresPontos(imagem_tres_pontos, regiao):
-            time.sleep(0.2)  # Aguardar um tempo após clicar nos três pontos
+            time.sleep(0.1)  # Aguardar um tempo após clicar nos três pontos
 
         # Clicar em faturas
         imagem_faturas = 'assets/imagemfaturas.jpg'  # Clicar em faturas
         regiao = (393, 623, 200, 200)
 
         if clicarfaturas(imagem_faturas, regiao):
-            time.sleep(0.5)
+            time.sleep(0.3)
             pa.scroll(-500)
-            time.sleep(1)
-            pa.scroll(-500)
-            time.sleep(1)
+            time.sleep(0.3)
 
          
     else:
@@ -469,7 +467,7 @@ for linha in range(comecoLinha, finalLinha + 1):
             regiao = (832, 483, 250, 280)
 
             if clicarTresPontos(imagem_tres_pontos, regiao):
-                time.sleep(0.5)
+                time.sleep(0.1)
 
             imagem_faturas = 'assets/imagemfaturas.jpg'  # Outro clique
             regiao = (392, 493, 250, 380)
@@ -489,14 +487,15 @@ for linha in range(comecoLinha, finalLinha + 1):
 # Verificar o mês capturado na tela
     if verificarMes(linha, mesEsperado):
     # Verificar o status de pagamento
-        status = verificarStatusPagamento(linha)
+        status = verificarStatus(linha)
         print(f"Status para a linha {linha}: {status}")
         if status == "paga":
             pintarDeVerde(linha)
         elif status == "atrasada":
-            pintarDeVermelho(linha)
-        else:
             pintarDeAmarelo(linha)
+        else:
+            pintarDeVermelho(linha)
+            print ("Pintei de vermelho, verificar depois por favor")
     else:
     # Se o mês não for o esperado, tenta verificar em uma nova coordenada
         if verificarMesAlternativo(linha, mesEsperado):
@@ -505,10 +504,9 @@ for linha in range(comecoLinha, finalLinha + 1):
             print(f"Status alternativo para a linha {linha}: {status}")
             if status == "paga":
                 pintarDeVerde(linha)
-                print('Pintei de verde')
             elif status == "atrasada":
                 pintarDeAmarelo(linha)
-                print('Pintei de amarelo')
+                
         else:
         # Se o mês ainda não for o esperado, pinta a linha de laranja
             pintarDeVermelho(linha)
@@ -521,7 +519,9 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("agoAtualizada.xlsx")
+    wb.save("agoNova.xlsx")
+
+print(f"Processo iniciou às {horario_inicial}")
 
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")
 print(f"Processo finalizado para todas as linhas às {horario_final}")

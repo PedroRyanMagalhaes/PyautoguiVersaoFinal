@@ -4,7 +4,7 @@ import openpyxl
 import datetime
 import pyautogui as pa  
 import time
-import pyperclip
+import pyperclip    
 import pytesseract
 import cv2
 from openpyxl.styles import PatternFill
@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('agoAtualizada.xlsx')
+wb = openpyxl.load_workbook('ago300.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -360,8 +360,8 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "08"
 
 
-comecoLinha = 51
-finalLinha = 100
+comecoLinha = 701
+finalLinha = 750
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -383,6 +383,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     # Clica no lugar para dar 'ctrl + a'
+    esperar_carregamento('assets/carregando.jpg',0.5)
     pa.click(587, 365)
     pa.hotkey('ctrl', 'a')
     time.sleep(0.3)
@@ -519,7 +520,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("agoNova.xlsx")
+    wb.save("ago750.xlsx")
 
 print(f"Processo iniciou às {horario_inicial}")
 

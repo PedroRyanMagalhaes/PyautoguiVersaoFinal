@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out252.xlsx')
+wb = openpyxl.load_workbook('out400.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -60,7 +60,7 @@ def obterTelefone(linha):
     return sheet[f'E{linha}'].value
 
 def pintarDeVerde(linha):
-    verde = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+    verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
     for cell in sheet[linha]:
         cell.fill = verde
     
@@ -347,8 +347,8 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "10"
 
 
-comecoLinha = 252
-finalLinha = 260
+comecoLinha = 401
+finalLinha = 500
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -370,6 +370,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     # Clica no lugar para dar 'ctrl + a'
+    esperar_carregamento('assets/carregando.jpg',0.5)
     pa.click(587, 365)
     pa.hotkey('ctrl', 'a')
     time.sleep(0.3)
@@ -409,12 +410,12 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.click(451, 485)
     time.sleep(0.5)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    time.sleep(2)
+    time.sleep(1.5)
 
     
     if verificarSaldo(linha):
-            pintarDeAmarelo(linha)
-            print(f'Saldo encontrado na linha {linha}. Linha pintada de laranja.')
+            pintarDeVermelho(linha)
+            print(f'Saldo encontrado na linha {linha}. Linha pintada de vermelho.')
             pa.hotkey('alt', 'left')  # Voltar com Alt + Left
             #time.sleep(2)
             esperar_carregamento('assets/carregando.jpg',0.5)
@@ -439,9 +440,14 @@ for linha in range(comecoLinha, finalLinha + 1):
         if clicarfaturas(imagem_faturas, regiao):
             time.sleep(0.5)
          
+    elif verificarSaldo(linha):
+        pa.hotkey('alt', 'left')
+        pintarDeVermelho(linha)
+        continue
+
     else:
         pa.scroll(-500)  # Scroll para baixo
-        time.sleep(1)
+        time.sleep(0.5)
 
     # Se "faturamento" não for encontrado, verificar na coordenada alternativa
     if verificarFaturamentoAlternativo(linha):
@@ -460,8 +466,12 @@ for linha in range(comecoLinha, finalLinha + 1):
                 time.sleep(0.5)
 
             pa.scroll(500)  # Scroll para cima
-            time.sleep(1)
-        
+            time.sleep(0.5)
+
+    elif verificarSaldo(linha):
+        pa.hotkey('alt', 'left')
+        pintarDeVermelho(linha)
+        continue
 
     else:
         # Se "faturamento" não for encontrado em nenhuma das coordenadas, pular linha
@@ -476,9 +486,10 @@ for linha in range(comecoLinha, finalLinha + 1):
         if status == "paga":
             pintarDeVerde(linha)
         elif status == "atrasada":
-            pintarDeVermelho(linha)
-        else:
             pintarDeAmarelo(linha)
+        else:
+            pintarDeVermelho(linha)
+            print ("Pintei de vermelho, verificar depois por favor")
     else:
     # Se o mês não for o esperado, tenta verificar em uma nova coordenada
         if verificarMesAlternativo(linha, mesEsperado):
@@ -500,8 +511,8 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(0.5)
     pa.hotkey('alt', 'left')
     #time.sleep(7)
-    esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out.260.xlsx")
+    #esperar_carregamento('assets/carregando.jpg',0.5)
+    wb.save("out500.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

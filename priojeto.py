@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out252.xlsx')
+wb = openpyxl.load_workbook('out.260.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -348,7 +348,7 @@ mesEsperado = "10"
 
 
 comecoLinha = 252
-finalLinha = 260
+finalLinha = 252
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -370,7 +370,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     # Clica no lugar para dar 'ctrl + a'
-    pa.click(587, 365)
+    pa.click(690,294)
     pa.hotkey('ctrl', 'a')
     time.sleep(0.3)
 
@@ -406,7 +406,7 @@ for linha in range(comecoLinha, finalLinha + 1):
             
 
     # Clicar em detalhes 
-    pa.click(451, 485)
+    pa.click(546,380)
     time.sleep(0.5)
     esperar_carregamento('assets/carregando.jpg',0.5)
     time.sleep(2)
@@ -501,7 +501,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out.260.xlsx")
+    wb.save("out300.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

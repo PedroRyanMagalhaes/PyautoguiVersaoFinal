@@ -15,12 +15,6 @@ import os
 wb = openpyxl.load_workbook('out.260.xlsx')
 sheet = wb.active
 
-import pyautogui as pa
-import time
-
-import pyautogui as pa
-import time
-import os
 
 def esperar_carregamento(imagem_carregando, confiança=0.8, pasta_salvamento='capturas', max_tentativas=100):
 
@@ -46,6 +40,9 @@ def esperar_carregamento(imagem_carregando, confiança=0.8, pasta_salvamento='ca
         print("Número máximo de tentativas alcançado. Saindo do loop.")
 
 
+
+
+
 def criarPastaParaLinha(linha):
     pasta_ = f'prints{linha}'
     if not os.path.exists(pasta_):
@@ -56,7 +53,7 @@ def verificarStatus(linha):
     status = verificarStatusPagamento(linha) or verificarStatusPagamentoAlternativo(linha)
     return status
 
-def obterTelefone(linha):
+def obterTelefone(linha):   
     return sheet[f'E{linha}'].value
 
 def pintarDeVerde(linha):
@@ -77,19 +74,20 @@ def pintarDeAmarelo(linha):
         cell.fill = amarelo
 
 # Função para verificar o mês
-def verificarMes(linha, mesEsperado):
+def verificaMes(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_mes = os.path.join(pasta_, f'{linha}_printMes.png')
-        screenshot = pa.screenshot(region=(431, 883, 70, 60))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(524, 705, 100, 60))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+        blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+        _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-        extracted_text = pytesseract.image_to_string(thresh)
+        extracted_text = pytesseract.image_to_string(thresh, config='--psm 6 -c tessedit_char_whitelist=0123456789/')
         print(f"Texto extraído para o pagamento na linha {linha}: {extracted_text}")
 
         return mesEsperado in extracted_text
@@ -98,42 +96,46 @@ def verificarMes(linha, mesEsperado):
         print(f"Ocorreu um erro ao verificar o mês na linha {linha}: {str(e)}")
         return False
 
+
 # Função para verificar o mês em uma nova coordenada
 def verificarMesAlternativo(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
-        screenshot_mes = os.path.join(pasta_, f'{linha}_printMesAlternativo.png')
-        screenshot = pa.screenshot(region=(433, 971, 70, 80))  # Nova região
+        screenshot_mes = os.path.join(pasta_, f'{linha}_printMesAlt.png')
+        screenshot = pa.screenshot(region=(517, 752, 100, 60))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+        blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+        _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-        extracted_text = pytesseract.image_to_string(thresh)
-        print(f"Texto extraído para o pagamento na linha {linha} (alternativo): {extracted_text}")
+        extracted_text = pytesseract.image_to_string(thresh, config='--psm 6 -c tessedit_char_whitelist=0123456789/')
+        print(f"Texto extraído para o pagamento na linha alternativa {linha}: {extracted_text}")
 
         return mesEsperado in extracted_text
 
     except Exception as e:
         print(f"Ocorreu um erro ao verificar o mês alternativo na linha {linha}: {str(e)}")
         return False
-
 # Função para verificar se está "pago" ou "atrasada"
 def verificarStatusPagamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamento.png')
-        screenshot = pa.screenshot(region=(1044, 884, 100, 40))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(1035, 708, 100, 40))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
 
+        # Aumentar a resolução da imagem para melhorar a leitura
+        img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+        blurred = cv2.GaussianBlur(gray, (1, 1), 0)
+        _, thresh = cv2.threshold(blurred, 150, 255, cv2.THRESH_BINARY_INV)
 
-        extracted_text = pytesseract.image_to_string(thresh)
+        extracted_text = pytesseract.image_to_string(thresh, config='--psm 7')
         print(f"Texto extraído para o pagamento na linha {linha}: {extracted_text}")
 
         if "paga" in extracted_text.lower():
@@ -150,21 +152,25 @@ def verificarStatusPagamento(linha):
         print(f"Ocorreu um erro ao verificar o status de pagamento na linha {linha}: {str(e)}")
         return "erro"
 
+
 # Função para verificar o status de pagamento em uma nova coordenada
 def verificarStatusPagamentoAlternativo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
-        screenshot_status = os.path.join(pasta_, f'{linha}_printPagamentAlternativo.png')
-        screenshot = pa.screenshot(region=(1040,975, 120, 50))  # Ajuste a nova região conforme necessário
+        screenshot_status = os.path.join(pasta_, f'{linha}_printPagamentoAlt.png')
+        screenshot = pa.screenshot(region=(1033, 780, 120, 50))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
 
+        # Aumentar a resolução da imagem para melhorar a leitura
+        img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+        blurred = cv2.GaussianBlur(gray, (1, 1), 0)
+        _, thresh = cv2.threshold(blurred, 150, 255, cv2.THRESH_BINARY_INV)
 
-        extracted_text = pytesseract.image_to_string(thresh)
-        print(f"Texto extraído para o pagamento na linha {linha} (alternativo): {extracted_text}")
+        extracted_text = pytesseract.image_to_string(thresh, config='--psm 7')
+        print(f"Texto extraído para o pagamento na linha Alternativo {linha}: {extracted_text}")
 
         if "paga" in extracted_text.lower():
             print(f"Status 'paga' encontrado na linha {linha}.")
@@ -173,18 +179,19 @@ def verificarStatusPagamentoAlternativo(linha):
             print(f"Status 'atrasada' encontrado na linha {linha}.")
             return "atrasada"
         else:
-            print(f"Status desconhecido na linha {linha}: {extracted_text}")
+            print(f"pagamento desconhecido na linha alternativa {linha}: {extracted_text}")
             return None
 
     except Exception as e:
-        print(f"Ocorreu um erro ao verificar o status de pagamento alternativo na linha {linha}: {str(e)}")
+        print(f"Ocorreu um erro ao verificar o status de pagamento na linha {linha}: {str(e)}")
         return "erro"
+
 
 def verificarFaturamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_faturamento = os.path.join(pasta_, f'{linha}_printFaturamento.png')
-        screenshot = pa.screenshot(region=(408,640,400,80))  # Ajuste essa coordenada para a região correta
+        screenshot = pa.screenshot(region=(491,474,400,80))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_faturamento)
 
         img = cv2.imread(screenshot_faturamento)
@@ -211,7 +218,7 @@ def verificarFaturamentoAlternativo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_faturamento_alt = os.path.join(pasta_, f'{linha}_printFaturamentoAlt.png')
-        screenshot = pa.screenshot(region=(386,479, 400, 250))  # Ajuste essa coordenada para a nova região
+        screenshot = pa.screenshot(region=(503,761  , 400, 250))  # Ajuste essa coordenada para a nova região
         screenshot.save(screenshot_faturamento_alt)
 
         img = cv2.imread(screenshot_faturamento_alt)
@@ -236,7 +243,7 @@ def verificarSaldo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_saldo = os.path.join(pasta_, f'{linha}_printSaldo.png')
-        screenshot = pa.screenshot(region=(400,640,400,100))  # Ajuste essa coordenada para a região correta
+        screenshot = pa.screenshot(region=(505,474,400,100))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_saldo)
 
         img = cv2.imread(screenshot_saldo)
@@ -261,24 +268,25 @@ def verificarSaldo(linha):
 contador = 1
 
 def clicarTresPontos(imagem_tres_pontos, regiao=None):
-    
     # Aguarda um momento para garantir que a tela esteja pronta
     time.sleep(1)
 
-    pasta_ = criarPastaParaLinha(linha)
-
     # Captura a tela ou a região especificada
+    pasta_ = criarPastaParaLinha(linha)
     screenshot = pa.screenshot(region=regiao)
-
-    nome_arquivo = os.path.join(pasta_, f"{linha}trespontos.png")
-
+    nome_arquivo = os.path.join(pasta_, f"{linha}trespontos.png")  # Salva a captura para debug
     screenshot.save(nome_arquivo)
+    print(f"Captura de tela salva como: {nome_arquivo}")
 
     posicao = None
 
     # Tenta localizar a imagem na tela
     try:
         posicao = pa.locateOnScreen(imagem_tres_pontos, confidence=0.5, region=regiao)
+        if posicao:
+            print(f"Imagem dos três pontos localizada na posição: {posicao}")
+        else:
+            print("Imagem dos três pontos não encontrada na tela.")
     except Exception as e:
         print(f"Erro ao tentar localizar a imagem: {e}")
         return False  # Retorna False se ocorrer qualquer erro
@@ -289,9 +297,7 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
         print("Clicou nos três pontinhos.")
         return True
     else:
-        print("Imagem dos três pontinhos não encontrada.")
         return False
-   
 
 
     
@@ -325,7 +331,7 @@ def clicarfaturas(imagem_faturas, regiao=None):
 def verificarLinhaNaoLocalizada(linha):
         pasta_ = criarPastaParaLinha(linha)
         screenshot_linhanaolocalizada = os.path.join(pasta_, f'{linha}_LinhaNaoLocalizada.png')
-        screenshot = pa.screenshot(region=(774,419,400,400))  # Ajuste essa coordenada para a região correta
+        screenshot = pa.screenshot(region=(827,430,400,400))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_linhanaolocalizada)
 
         img = cv2.imread(screenshot_linhanaolocalizada)
@@ -380,28 +386,35 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(0.3)
     
 
-    esperar_carregamento('assets/carregando.jpg',0.5)
+    esperar_carregamento('assets/PCcarregando.png',0.5)
     
 
     # Clicar nos 3 pontinhos
     time.sleep(0.5)
-    resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
+    resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(670,328, 100, 100))
+    
     
     if resultado:
         time.sleep(0.3)
     else:
-        pa.click(567,604)
-        resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
+    # Clica em uma posição fixa se o resultado for False
+        pa.click(623, 516)
+        print("Clicou na posição fixa (623, 516) para tentar acessar os três pontos.")
+        resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(670, 328, 100, 100))
+    
         if resultado:
+            print("Imagem dos três pontos localizada e clicada com sucesso.")
             time.sleep(0.3)
         else:
+            print("Não foi possível localizar a imagem dos três pontos após o clique na posição fixa.")
             verificarLinhaNaoLocalizada(linha)
             pintarDeVermelho(linha)
             pa.hotkey('alt', 'left')
             time.sleep(0.5)
-            print(f"Processamento da linha {linha} = linha nao localizada.")
+            print(f"Processamento da linha {linha} = linha não localizada.")
             time.sleep(0.5)
             continue
+
             
             
 
@@ -426,7 +439,7 @@ for linha in range(comecoLinha, finalLinha + 1):
   # Verificar "faturamento" após clicar em detalhes
     if verificarFaturamento(linha):
         imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Substitua pelo caminho real da sua imagem
-        regiao = (829, 612, 200, 280)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
+        regiao = (868,489, 200, 280)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
     
     
         if clicarTresPontos(imagem_tres_pontos, regiao):
@@ -434,7 +447,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
         # Clicar em faturas
         imagem_faturas = 'assets/imagemfaturas.jpg'  # Clicar em faturas
-        regiao = (393, 623, 200, 200)
+        regiao = (522,496, 200, 200)
 
         if clicarfaturas(imagem_faturas, regiao):
             time.sleep(0.5)
@@ -448,13 +461,13 @@ for linha in range(comecoLinha, finalLinha + 1):
         # Se encontrado na coordenada alternativa, realizar scroll e cliques adicionais
 
             imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Clique em nova coordenada
-            regiao = (832, 483, 250, 280)
+            regiao = (872,781, 250, 280)
 
             if clicarTresPontos(imagem_tres_pontos, regiao):
                 time.sleep(0.5)
 
             imagem_faturas = 'assets/imagemfaturas.jpg'  # Outro clique
-            regiao = (392, 493, 250, 380)
+            regiao = (518,784, 250, 380)
 
             if clicarfaturas(imagem_faturas, regiao):
                 time.sleep(0.5)
@@ -469,7 +482,7 @@ for linha in range(comecoLinha, finalLinha + 1):
          # Pula para a próxima linha se nenhuma verificação passar
 
 # Verificar o mês capturado na tela
-    if verificarMes(linha, mesEsperado):
+    if verificaMes(linha,mesEsperado):
     # Verificar o status de pagamento
         status = verificarStatus(linha)
         print(f"Status para a linha {linha}: {status}")

@@ -16,7 +16,7 @@ import numpy as np
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('estornos.xlsx')
+wb = openpyxl.load_workbook('ESTORNONOVO.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -188,7 +188,7 @@ def verificarFaturamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_faturamento = os.path.join(pasta_, f'{linha}_printFaturamento.png')
-        screenshot = pa.screenshot(region=(408,640,400,80))  # Ajuste essa coordenada para a região correta
+        screenshot = pa.screenshot(region=(491,474,400,100))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_faturamento)
 
         img = cv2.imread(screenshot_faturamento)
@@ -215,7 +215,7 @@ def verificarFaturamentoAlternativo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_faturamento_alt = os.path.join(pasta_, f'{linha}_printFaturamentoAlt.png')
-        screenshot = pa.screenshot(region=(386,479, 400, 250))  # Ajuste essa coordenada para a nova região
+        screenshot = pa.screenshot(region=(503,761, 400, 250))  # Ajuste essa coordenada para a nova região
         screenshot.save(screenshot_faturamento_alt)
 
         img = cv2.imread(screenshot_faturamento_alt)
@@ -240,7 +240,7 @@ def verificarSaldo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_saldo = os.path.join(pasta_, f'{linha}_printSaldo.png')
-        screenshot = pa.screenshot(region=(400,640,400,100))  # Ajuste essa coordenada para a região correta
+        screenshot = pa.screenshot(region=(505,474,400,100))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_saldo)
 
         img = cv2.imread(screenshot_saldo)
@@ -375,9 +375,10 @@ def verificarSuspensoEPago(linha):
         print("Essa linha é suspensa.")
         sheet[f'L{linha}'] = "Suspenso"  # Atualiza a coluna L da linha correspondente
         return True
-    elif "pago" in extracted_text:
-        print("Essa linha é paga.")
-        sheet[f'L{linha}'] = "Pago"  # Atualiza a coluna L da linha correspondente
+    elif "ativo" in extracted_text:
+        pintarDeVerde(linha)
+        print("Essa linha é ativo.")
+        sheet[f'L{linha}'] = "ativo"  # Atualiza a coluna L da linha correspondente
         return True
     else:
         print("Status não reconhecido.")
@@ -493,8 +494,8 @@ def verificarData(linha, region, coluna):
 mesEsperado = "10"
 
 
-comecoLinha = 4
-finalLinha = 4
+comecoLinha = 7
+finalLinha = 14
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -578,7 +579,7 @@ for linha in range(comecoLinha, finalLinha + 1):
   # Verificar "faturamento" após clicar em detalhes
     if verificarFaturamento(linha):
         imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Substitua pelo caminho real da sua imagem
-        regiao = (829, 612, 200, 280)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
+        regiao = (857,494, 200, 280)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
     
     
         if clicarTresPontos(imagem_tres_pontos, regiao):
@@ -586,7 +587,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
         # Clicar em faturas
         imagem_faturas = 'assets/imagemfaturas.jpg'  # Clicar em faturas
-        regiao = (393, 623, 200, 200)
+        regiao = (519,489, 200, 200)
 
         if clicarfaturas(imagem_faturas, regiao):
             time.sleep(0.5)
@@ -633,7 +634,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     if  verificarData(linha, (520, 825, 150, 60), 'M'):
-        verificarPagamento(linha, 'O', (1028, 804, 100, 60))
+        verificarPagamento(linha, 'M', (1028, 804, 100, 60))
         time.sleep(0.5)  # Pausa após a primeira verificação
     else:
         print("Não achei data na coluna M")
@@ -644,7 +645,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     else:
         print("Não achei data na coluna N")
     if  verificarData(linha, (518, 671, 120, 30), 'O'):
-        verificarPagamento(linha, 'M', (1025, 652, 100, 60))
+        verificarPagamento(linha, 'O', (1025, 652, 100, 60))
         time.sleep(0.5)  # Pausa após a terceira verificação
     else:
         print("Não achei data na coluna O")
@@ -656,7 +657,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("ESTORNONOVO.xlsx")
+    wb.save("ESTORNOATUALIZADA.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

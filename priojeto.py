@@ -11,7 +11,7 @@ from openpyxl.styles import PatternFill
 import os
 from openpyxl import load_workbook
 import re
-
+from difflib import get_close_matches
 
 # Carrega a planilha
 wb = openpyxl.load_workbook('estornos.xlsx')
@@ -348,35 +348,45 @@ def verificarLinhaNaoLocalizada(linha):
 
 
 # Função para verificar status "Suspenso" ou "Pago" e atualizar a planilha na coluna especificada
+
+
+import os
+import cv2
+import pytesseract
+import pyautogui as pa
+
 def verificarSuspensoEPago(linha):
     pasta_ = criarPastaParaLinha(linha)
     screenshot_status = os.path.join(pasta_, f'{linha}_status.png')
-    screenshot = pa.screenshot(region=(966, 402, 150, 100))  # Ajuste essa coordenada para a região correta
+    screenshot = pa.screenshot(region=(968, 330, 150, 60))  # Ajuste essa coordenada para a região correta
     screenshot.save(screenshot_status)
 
+    # Carregar e processar a imagem
     img = cv2.imread(screenshot_status)
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+    gray = cv2.GaussianBlur(gray, (3, 3), 0)  # Suavização para reduzir ruído
+    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)  # Binarização adaptativa
 
-    # Usando o pytesseract para extrair o texto da imagem
-    extracted_text = pytesseract.image_to_string(thresh).lower()
+    # Configuração do pytesseract para melhorar a precisão
+    config = r'--psm 6 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+    # Extrair o texto e converter para minúsculas
+    extracted_text = pytesseract.image_to_string(thresh, config=config).lower().strip()
     print(f"Texto extraído na linha {linha}: {extracted_text}")
 
-    # Verificando se o texto extraído contém "suspenso" ou "pago"
+    # Verificar diretamente o conteúdo extraído
     if "suspenso" in extracted_text:
         print("Essa linha é suspensa.")
         sheet[f'L{linha}'] = "Suspenso"  # Atualiza a coluna L da linha correspondente
-        return True  # Retorna True se suspenso
+        return True
     elif "pago" in extracted_text:
         print("Essa linha é paga.")
         sheet[f'L{linha}'] = "Pago"  # Atualiza a coluna L da linha correspondente
-        return True  # Retorna True se pago
+        return True
     else:
         print("Status não reconhecido.")
-        return False 
+        return False
 
-    #Aqui você pode salvar a planilha se necessário
 
 
 def verificarData(linha, region, coluna):
@@ -470,13 +480,13 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     # Clicar nos 3 pontinhos
     time.sleep(0.5)
-    resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(593, 404, 100, 100))
+    resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(674,334, 100, 100))
     
     if resultado:
         time.sleep(0.3)
     else:
         pa.click(567,604)
-        resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(593, 404, 100, 100))
+        resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(674,334, 100, 100))
         if resultado:
             time.sleep(0.3)
         else:
@@ -491,7 +501,7 @@ for linha in range(comecoLinha, finalLinha + 1):
             
 
     # Clicar em detalhes 
-    pa.click(451, 485)
+    pa.click(549,385)
     time.sleep(0.5)
     esperar_carregamento('assets/carregando.jpg',0.5)
     time.sleep(1.5)
@@ -570,19 +580,19 @@ for linha in range(comecoLinha, finalLinha + 1):
          # Pula para a próxima linha se nenhuma verificação passar
 
 
-    if verificarData(linha,(406,621,150,60),'M'):
+    if verificarData(linha,(518,671,150,40),'M'):
         #verificarStatusPagamentoo()
         time.sleep (1)
-        if verificarData(linha,(401,712,150,60),'N'):
+        #if verificarData(linha,(518,748,150,60),'N'):
             #verificarStatusPagamentoo2()
-            time.sleep(0.5)
-        else:
-            print ("nao achei data de segunda")
-        if verificarData(linha, (397,806,150,60),'P'):
+         #   time.sleep(0.5)
+        #else:
+         #   print ("nao achei data de segunda")
+        #if verificarData(linha, (520,825,150,60),'P'):
             #verificarStatusPagamentoo3()
-            time.sleep(0.5)
-        else:
-            print ("nao achei data de terceira")
+         #   time.sleep(0.5)
+        #else:
+         #   print ("nao achei data de terceira")
     else:
         print ("nao achei nada de data")
         

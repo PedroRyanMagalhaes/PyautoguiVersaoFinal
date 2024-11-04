@@ -571,12 +571,15 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     if verificarData(linha,(406,621,150,60),'M'):
+        #verificarStatusPagamentoo()
         time.sleep (1)
         if verificarData(linha,(401,712,150,60),'N'):
+            #verificarStatusPagamentoo2()
             time.sleep(0.5)
         else:
             print ("nao achei data de segunda")
         if verificarData(linha, (397,806,150,60),'P'):
+            #verificarStatusPagamentoo3()
             time.sleep(0.5)
         else:
             print ("nao achei data de terceira")

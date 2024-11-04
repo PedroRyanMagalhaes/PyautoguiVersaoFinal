@@ -1,4 +1,4 @@
-#alfa rodando no notebook
+#alfa rodar estorno
 
 import openpyxl
 import datetime
@@ -9,10 +9,11 @@ import pytesseract
 import cv2
 from openpyxl.styles import PatternFill
 import os
+from openpyxl import load_workbook
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out400.xlsx')
+wb = openpyxl.load_workbook('estornos.xlsx')
 sheet = wb.active
 
 import pyautogui as pa
@@ -22,7 +23,7 @@ import pyautogui as pa
 import time
 import os
 
-def esperar_carregamento(imagem_carregando, confiança=0.8, pasta_salvamento='capturas', max_tentativas=100):
+def esperar_carregamento(imagem_carregando, confiança=0.8,pasta_salvamento='capturas', max_tentativas=100):
 
     # Cria a pasta para salvar as capturas, se não existir
 
@@ -57,7 +58,7 @@ def verificarStatus(linha):
     return status
 
 def obterTelefone(linha):
-    return sheet[f'E{linha}'].value
+    return sheet[f'B{linha}'].value
 
 def pintarDeVerde(linha):
     verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
@@ -343,12 +344,46 @@ def verificarLinhaNaoLocalizada(linha):
         else:
             return False
 
+
+
+# Função para verificar status "Suspenso" ou "Pago" e atualizar a planilha na coluna especificada
+def verificarSuspensoEPago(linha):
+    pasta_ = criarPastaParaLinha(linha)
+    screenshot_status = os.path.join(pasta_, f'{linha}_status.png')
+    screenshot = pa.screenshot(region=(966, 402, 150, 100))  # Ajuste essa coordenada para a região correta
+    screenshot.save(screenshot_status)
+
+    img = cv2.imread(screenshot_status)
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+
+    # Usando o pytesseract para extrair o texto da imagem
+    extracted_text = pytesseract.image_to_string(thresh).lower()
+    print(f"Texto extraído na linha {linha}: {extracted_text}")
+
+    # Verificando se o texto extraído contém "suspenso" ou "pago"
+    if "suspenso" in extracted_text:
+        print("Essa linha é suspensa.")
+        sheet[f'L{linha}'] = "Suspenso"  # Atualiza a coluna L da linha correspondente
+        return True  # Retorna True se suspenso
+    elif "pago" in extracted_text:
+        print("Essa linha é paga.")
+        sheet[f'L{linha}'] = "Pago"  # Atualiza a coluna L da linha correspondente
+        return True  # Retorna True se pago
+    else:
+        print("Status não reconhecido.")
+        return False 
+
+    #Aqui você pode salvar a planilha se necessário
+
+
 # Mês esperado
 mesEsperado = "10"
 
 
-comecoLinha = 401
-finalLinha = 500
+comecoLinha = 4
+finalLinha = 6
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -411,6 +446,11 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(0.5)
     esperar_carregamento('assets/carregando.jpg',0.5)
     time.sleep(1.5)
+
+    if verificarSuspensoEPago(linha):
+        print ("Encontrei")
+        time.sleep(1)
+        
 
     
     if verificarSaldo(linha):
@@ -478,6 +518,8 @@ for linha in range(comecoLinha, finalLinha + 1):
             print(f"'Faturamento' não encontrado na linha alternativa {linha}.")
          # Pula para a próxima linha se nenhuma verificação passar
 
+
+    #se idenfiticar (01 ate 12) ele ler a parte de situaao paga ou atrasada e escrver na planilha vai verifciando ate nao achar nada volta e começa dnv
 # Verificar o mês capturado na tela
     if verificarMes(linha, mesEsperado):
     # Verificar o status de pagamento
@@ -512,7 +554,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out500.xlsx")
+    wb.save("ESTORNOATUALIZADA.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

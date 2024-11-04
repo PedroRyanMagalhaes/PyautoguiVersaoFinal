@@ -454,8 +454,8 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     # Clica no lugar para dar 'ctrl + a'
-    esperar_carregamento('assets/carregando.jpg',0.5)
-    pa.click(587, 365)
+    esperar_carregamento('assets/PCcarregando.png',0.5)
+    pa.click(681,294)
     pa.hotkey('ctrl', 'a')
     time.sleep(0.3)
 
@@ -465,18 +465,18 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(0.3)
     
 
-    esperar_carregamento('assets/carregando.jpg',0.5)
+    esperar_carregamento('assets/PCcarregando.png',0.5)
     
 
     # Clicar nos 3 pontinhos
     time.sleep(0.5)
-    resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
+    resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(593, 404, 100, 100))
     
     if resultado:
         time.sleep(0.3)
     else:
         pa.click(567,604)
-        resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(593, 404, 100, 100))
+        resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(593, 404, 100, 100))
         if resultado:
             time.sleep(0.3)
         else:

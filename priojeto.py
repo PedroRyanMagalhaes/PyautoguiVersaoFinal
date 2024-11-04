@@ -12,6 +12,8 @@ import os
 from openpyxl import load_workbook
 import re
 from difflib import get_close_matches
+import numpy as np
+
 
 # Carrega a planilha
 wb = openpyxl.load_workbook('estornos.xlsx')
@@ -349,12 +351,6 @@ def verificarLinhaNaoLocalizada(linha):
 
 # Função para verificar status "Suspenso" ou "Pago" e atualizar a planilha na coluna especificada
 
-
-import os
-import cv2
-import pytesseract
-import pyautogui as pa
-
 def verificarSuspensoEPago(linha):
     pasta_ = criarPastaParaLinha(linha)
     screenshot_status = os.path.join(pasta_, f'{linha}_status.png')
@@ -387,6 +383,56 @@ def verificarSuspensoEPago(linha):
         print("Status não reconhecido.")
         return False
 
+def verificarPagamento(linha, coluna, region):
+    try:
+        # Cria a pasta para salvar a imagem com o nome da linha
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_pagamento = os.path.join(pasta_, f'{linha}_printPagamento.png')
+        
+        # Tira um print na região especificada
+        screenshot = pa.screenshot(region=region)  # Usa a região passada como parâmetro
+        screenshot.save(screenshot_pagamento)
+
+        img = cv2.imread(screenshot_pagamento)
+
+        # Conversão para escala de cinza
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+
+        # Extrai o texto da imagem
+        extracted_text = pytesseract.image_to_string(thresh)
+        print(f"Texto extraído para o pagamento na linha {linha}: {extracted_text}")
+
+        # Lê o status atual da célula
+        status_atual = sheet[f'{coluna}{linha}'].value or ""  # Pega o valor atual ou uma string vazia
+
+        # Verifica o status do pagamento e atualiza a célula
+        if "paga" in extracted_text.lower():
+            novo_status = "- PAGA"
+            print(f"Status 'paga' encontrado na linha {linha}.")
+        elif "atrasada" in extracted_text.lower():
+            novo_status = "- ATRASADA"
+            print(f"Status 'atrasada' encontrado na linha {linha}.")
+        else:
+            print(f"Status desconhecido na linha {linha}: {extracted_text}")
+            return None
+
+        # Atualiza a célula concatenando o novo status com o status atual
+        if status_atual:  # Se já existe um valor na célula
+            status_atual += f"  {novo_status}"
+        else:
+            status_atual = novo_status  # Se não havia valor, apenas define o novo status
+
+        sheet[f'{coluna}{linha}'] = status_atual  # Registra o status atualizado na coluna e linha corretas
+        return novo_status
+
+    except Exception as e:
+        print(f"Ocorreu um erro ao verificar o pagamento na linha {linha}: {str(e)}")
+        return "erro"
+
+
+
+
 
 
 def verificarData(linha, region, coluna):
@@ -394,7 +440,7 @@ def verificarData(linha, region, coluna):
         # Cria a pasta para salvar a imagem com o nome da linha
         pasta_ = criarPastaParaLinha(linha)
         screenshot_data = os.path.join(pasta_, f'{linha}_printdata.png')
-        
+
         # Tira um print na região especificada
         screenshot = pa.screenshot(region=region)
         screenshot.save(screenshot_data)
@@ -402,17 +448,22 @@ def verificarData(linha, region, coluna):
         # Carrega a imagem e faz o processamento
         img = cv2.imread(screenshot_data)
 
-        # Pré-processamento da imagem para melhorar a detecção de texto
+        # Conversão para escala de cinza
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        gray = cv2.GaussianBlur(gray, (3, 3), 0)  # Suavizar para reduzir ruído
-        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)  # Binarização adaptativa
+        
+        # Aumento de contraste e nitidez
+        sharpen_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+        sharpened = cv2.filter2D(gray, -1, sharpen_kernel)
 
-        # Ajuste das configurações do pytesseract para melhorar a detecção
+        # Binarização com limiar adaptativo
+        _, thresh = cv2.threshold(sharpened, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        # Configuração do pytesseract para reconhecimento de datas
         config = r'--psm 6 -c tessedit_char_whitelist=0123456789/'
 
         # Extrai o texto da imagem
         extracted_text = pytesseract.image_to_string(thresh, config=config)
-        print(f"data extraído na linha {linha}: {extracted_text}")
+        print(f"Data extraída na linha {linha}: {extracted_text}")
 
         # Procura qualquer data no formato "dd/mm/yyyy"
         date_pattern = r'\b\d{2}/\d{2}/\d{4}\b'
@@ -430,8 +481,9 @@ def verificarData(linha, region, coluna):
         return False
 
     except Exception as e:
-        print(f"Ocorreu um erro ao verificar o mês na linha {linha}: {str(e)}")
+        print(f"Ocorreu um erro ao verificar a data na linha {linha}: {str(e)}")
         return False
+
 
 
 
@@ -442,7 +494,7 @@ mesEsperado = "10"
 
 
 comecoLinha = 4
-finalLinha = 4
+finalLinha = 6
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -508,7 +560,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     if verificarSuspensoEPago(linha):
         print ("Encontrei")
-        time.sleep(1)
+
         
 
     
@@ -580,21 +632,22 @@ for linha in range(comecoLinha, finalLinha + 1):
          # Pula para a próxima linha se nenhuma verificação passar
 
 
-    if verificarData(linha,(518,671,150,40),'M'):
-        #verificarStatusPagamentoo()
-        time.sleep (1)
-        #if verificarData(linha,(518,748,150,60),'N'):
-            #verificarStatusPagamentoo2()
-         #   time.sleep(0.5)
-        #else:
-         #   print ("nao achei data de segunda")
-        #if verificarData(linha, (520,825,150,60),'P'):
-            #verificarStatusPagamentoo3()
-         #   time.sleep(0.5)
-        #else:
-         #   print ("nao achei data de terceira")
+    if  verificarData(linha, (518, 671, 120, 30), 'M'):
+        verificarPagamento(linha, 'M', (1025, 652, 100, 60))
+        time.sleep(0.5)  # Pausa após a primeira verificação
     else:
-        print ("nao achei nada de data")
+        print("Não achei data na coluna M")
+
+    if  verificarData(linha, (518, 748, 150, 40), 'N'):
+        verificarPagamento(linha, 'N', (1021, 727, 100, 60))
+        time.sleep(0.5)  # Pausa após a segunda verificação
+    else:
+        print("Não achei data na coluna N")
+    #if  verificarData(linha, (520, 825, 150, 60), 'O'):
+       # verificarPagamento(linha, 'O', (1028, 804, 100, 60))
+        #time.sleep(0.5)  # Pausa após a terceira verificação
+    #else:
+      #  print("Não achei data na coluna O")
         
 
     pa.hotkey('alt', 'left')

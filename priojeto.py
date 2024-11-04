@@ -10,6 +10,7 @@ import cv2
 from openpyxl.styles import PatternFill
 import os
 from openpyxl import load_workbook
+import re
 
 
 # Carrega a planilha
@@ -378,12 +379,60 @@ def verificarSuspensoEPago(linha):
     #Aqui você pode salvar a planilha se necessário
 
 
+def verificarData(linha, region, coluna):
+    try:
+        # Cria a pasta para salvar a imagem com o nome da linha
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_data = os.path.join(pasta_, f'{linha}_printdata.png')
+        
+        # Tira um print na região especificada
+        screenshot = pa.screenshot(region=region)
+        screenshot.save(screenshot_data)
+
+        # Carrega a imagem e faz o processamento
+        img = cv2.imread(screenshot_data)
+
+        # Pré-processamento da imagem para melhorar a detecção de texto
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (3, 3), 0)  # Suavizar para reduzir ruído
+        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)  # Binarização adaptativa
+
+        # Ajuste das configurações do pytesseract para melhorar a detecção
+        config = r'--psm 6 -c tessedit_char_whitelist=0123456789/'
+
+        # Extrai o texto da imagem
+        extracted_text = pytesseract.image_to_string(thresh, config=config)
+        print(f"data extraído na linha {linha}: {extracted_text}")
+
+        # Procura qualquer data no formato "dd/mm/yyyy"
+        date_pattern = r'\b\d{2}/\d{2}/\d{4}\b'
+        matched_dates = re.findall(date_pattern, extracted_text)
+
+        if matched_dates:
+            # Pega a primeira data encontrada e registra na coluna especificada
+            data_encontrada = matched_dates[0]
+            sheet[f'{coluna}{linha}'] = data_encontrada
+            print(f"Data encontrada e registrada na linha {linha}, coluna {coluna}: {data_encontrada}")
+            return True  # Indica que uma data foi encontrada
+
+        # Se nenhuma data for encontrada na região especificada
+        print(f"Nenhuma data encontrada na linha {linha} na região {region}.")
+        return False
+
+    except Exception as e:
+        print(f"Ocorreu um erro ao verificar o mês na linha {linha}: {str(e)}")
+        return False
+
+
+
+
+
 # Mês esperado
 mesEsperado = "10"
 
 
 comecoLinha = 4
-finalLinha = 6
+finalLinha = 4
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -479,6 +528,8 @@ for linha in range(comecoLinha, finalLinha + 1):
 
         if clicarfaturas(imagem_faturas, regiao):
             time.sleep(0.5)
+            pa.scroll(-500)
+        
          
     elif verificarSaldo(linha):
         pa.hotkey('alt', 'left')
@@ -505,7 +556,7 @@ for linha in range(comecoLinha, finalLinha + 1):
             if clicarfaturas(imagem_faturas, regiao):
                 time.sleep(0.5)
 
-            pa.scroll(500)  # Scroll para cima
+            pa.scroll(-500)  # Scroll para cima
             time.sleep(0.5)
 
     elif verificarSaldo(linha):
@@ -519,44 +570,76 @@ for linha in range(comecoLinha, finalLinha + 1):
          # Pula para a próxima linha se nenhuma verificação passar
 
 
-    #se idenfiticar (01 ate 12) ele ler a parte de situaao paga ou atrasada e escrver na planilha vai verifciando ate nao achar nada volta e começa dnv
-# Verificar o mês capturado na tela
-    if verificarMes(linha, mesEsperado):
-    # Verificar o status de pagamento
-        status = verificarStatus(linha)
-        print(f"Status para a linha {linha}: {status}")
-        if status == "paga":
-            pintarDeVerde(linha)
-        elif status == "atrasada":
-            pintarDeAmarelo(linha)
+    if verificarData(linha,(406,621,150,60),'M'):
+        time.sleep (1)
+        if verificarData(linha,(401,712,150,60),'N'):
+            time.sleep(0.5)
         else:
-            pintarDeVermelho(linha)
-            print ("Pintei de vermelho, verificar depois por favor")
+            print ("nao achei data de segunda")
+        if verificarData(linha, (397,806,150,60),'P'):
+            time.sleep(0.5)
+        else:
+            print ("nao achei data de terceira")
     else:
-    # Se o mês não for o esperado, tenta verificar em uma nova coordenada
-        if verificarMesAlternativo(linha, mesEsperado):
-        # Verificar o status de pagamento na coordenada alternativa
-            status = verificarStatusPagamentoAlternativo(linha)
-            print(f"Status alternativo para a linha {linha}: {status}")
-            if status == "paga":
-                pintarDeVerde(linha)
-            elif status == "atrasada":
-                pintarDeAmarelo(linha)
-        else:
-        # Se o mês ainda não for o esperado, pinta a linha de laranja
-            pintarDeVermelho(linha)
-            print ("Pintei de vermelho, verificar depois por favor")
+        print ("nao achei nada de data")
         
 
-# Voltar para a tela anterior duas vezes
     pa.hotkey('alt', 'left')
     time.sleep(0.5)
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("ESTORNOATUALIZADA.xlsx")
+    wb.save("ESTORNONOVO.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")
 
 print(f"Processo finalizado para todas as linhas às {horario_final}")
+
+
+
+
+
+
+
+
+
+    #if verificarMes(linha, mesEsperado):
+    # Verificar o status de pagamento
+        #status = verificarStatus(linha)
+        #print(f"Status para a linha {linha}: {status}")
+        #if status == "paga":
+        #    pintarDeVerde(linha)
+        #elif status == "atrasada":
+        #    pintarDeAmarelo(linha)
+        #else:
+        #    pintarDeVermelho(linha)
+        #    print ("Pintei de vermelho, verificar depois por favor")
+    #else:
+    # Se o mês não for o esperado, tenta verificar em uma nova coordenada
+       # if verificarMesAlternativo(linha, mesEsperado):
+        # Verificar o status de pagamento na coordenada alternativa
+         #   status = verificarStatusPagamentoAlternativo(linha)
+         #   print(f"Status alternativo para a linha {linha}: {status}")
+         #   if status == "paga":
+         #       pintarDeVerde(linha)
+          #  elif status == "atrasada":
+          #      pintarDeAmarelo(linha)
+        #else:
+        ## Se o mês ainda não for o esperado, pinta a linha de laranja
+         #   pintarDeVermelho(linha)
+          #  print ("Pintei de vermelho, verificar depois por favor")
+        
+
+# Voltar para a tela anterior duas vezes
+    #pa.hotkey('alt', 'left')
+    #time.sleep(0.5)
+    #pa.hotkey('alt', 'left')
+    ##time.sleep(7)
+    #esperar_carregamento('assets/carregando.jpg',0.5)
+    #wb.save("ESTORNOATUALIZADA.xlsx")
+
+#print (f"Começou às {horario_inicial}")
+#horario_final = datetime.datetime.now().strftime("%H:%M:%S")
+
+#print(f"Processo finalizado para todas as linhas às {horario_final}")

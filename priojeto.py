@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out.260.xlsx')
+wb = openpyxl.load_workbook('out.xlsx')
 sheet = wb.active
 
 
@@ -191,7 +191,7 @@ def verificarFaturamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_faturamento = os.path.join(pasta_, f'{linha}_printFaturamento.png')
-        screenshot = pa.screenshot(region=(491,474,400,80))  # Ajuste essa coordenada para a região correta
+        screenshot = pa.screenshot(region=(491,474,400,100))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_faturamento)
 
         img = cv2.imread(screenshot_faturamento)
@@ -353,8 +353,8 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "10"
 
 
-comecoLinha = 252
-finalLinha = 252
+comecoLinha = 401
+finalLinha = 410
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 

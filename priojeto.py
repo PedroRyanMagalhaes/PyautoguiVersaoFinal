@@ -494,7 +494,7 @@ mesEsperado = "10"
 
 
 comecoLinha = 4
-finalLinha = 6
+finalLinha = 4
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -632,8 +632,8 @@ for linha in range(comecoLinha, finalLinha + 1):
          # Pula para a próxima linha se nenhuma verificação passar
 
 
-    if  verificarData(linha, (518, 671, 120, 30), 'M'):
-        verificarPagamento(linha, 'M', (1025, 652, 100, 60))
+    if  verificarData(linha, (520, 825, 150, 60), 'M'):
+        verificarPagamento(linha, 'O', (1028, 804, 100, 60))
         time.sleep(0.5)  # Pausa após a primeira verificação
     else:
         print("Não achei data na coluna M")
@@ -643,11 +643,12 @@ for linha in range(comecoLinha, finalLinha + 1):
         time.sleep(0.5)  # Pausa após a segunda verificação
     else:
         print("Não achei data na coluna N")
-    #if  verificarData(linha, (520, 825, 150, 60), 'O'):
-       # verificarPagamento(linha, 'O', (1028, 804, 100, 60))
-        #time.sleep(0.5)  # Pausa após a terceira verificação
-    #else:
-      #  print("Não achei data na coluna O")
+    if  verificarData(linha, (518, 671, 120, 30), 'O'):
+        verificarPagamento(linha, 'M', (1025, 652, 100, 60))
+        time.sleep(0.5)  # Pausa após a terceira verificação
+    else:
+        print("Não achei data na coluna O")
+        
         
 
     pa.hotkey('alt', 'left')

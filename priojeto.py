@@ -57,7 +57,7 @@ def obterTelefone(linha):
     return sheet[f'E{linha}'].value
 
 def pintarDeVerde(linha):
-    verde = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+    verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid")
     for cell in sheet[linha]:
         cell.fill = verde
     
@@ -88,7 +88,7 @@ def verificaMes(linha, mesEsperado):
         _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
         extracted_text = pytesseract.image_to_string(thresh, config='--psm 6 -c tessedit_char_whitelist=0123456789/')
-        print(f"Texto extraído para o pagamento na linha {linha}: {extracted_text}")
+        print(f"Mes: {linha}: {extracted_text}")
 
         return mesEsperado in extracted_text
 
@@ -102,7 +102,7 @@ def verificarMesAlternativo(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_mes = os.path.join(pasta_, f'{linha}_printMesAlt.png')
-        screenshot = pa.screenshot(region=(517, 752, 100, 60))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(525,781, 100, 100))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -112,7 +112,7 @@ def verificarMesAlternativo(linha, mesEsperado):
         _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
         extracted_text = pytesseract.image_to_string(thresh, config='--psm 6 -c tessedit_char_whitelist=0123456789/')
-        print(f"Texto extraído para o pagamento na linha alternativa {linha}: {extracted_text}")
+        print(f"Mes Alt {linha}: {extracted_text}")
 
         return mesEsperado in extracted_text
 
@@ -124,7 +124,7 @@ def verificarStatusPagamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamento.png')
-        screenshot = pa.screenshot(region=(1035, 708, 100, 40))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(1024,703, 100, 40))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -158,7 +158,7 @@ def verificarStatusPagamentoAlternativo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamentoAlt.png')
-        screenshot = pa.screenshot(region=(1033, 780, 120, 50))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(1027,783, 130, 50))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -218,7 +218,7 @@ def verificarFaturamentoAlternativo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_faturamento_alt = os.path.join(pasta_, f'{linha}_printFaturamentoAlt.png')
-        screenshot = pa.screenshot(region=(503,761  , 400, 250))  # Ajuste essa coordenada para a nova região
+        screenshot = pa.screenshot(region=(503,623, 500, 250))  # Ajuste essa coordenada para a nova região
         screenshot.save(screenshot_faturamento_alt)
 
         img = cv2.imread(screenshot_faturamento_alt)
@@ -353,8 +353,8 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "10"
 
 
-comecoLinha = 401
-finalLinha = 410
+comecoLinha = 418
+finalLinha = 419
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -461,13 +461,13 @@ for linha in range(comecoLinha, finalLinha + 1):
         # Se encontrado na coordenada alternativa, realizar scroll e cliques adicionais
 
             imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Clique em nova coordenada
-            regiao = (872,781, 250, 280)
+            regiao = (868,631, 250, 280)
 
             if clicarTresPontos(imagem_tres_pontos, regiao):
                 time.sleep(0.5)
 
             imagem_faturas = 'assets/imagemfaturas.jpg'  # Outro clique
-            regiao = (518,784, 250, 380)
+            regiao = (505,652, 250, 380)
 
             if clicarfaturas(imagem_faturas, regiao):
                 time.sleep(0.5)
@@ -484,14 +484,14 @@ for linha in range(comecoLinha, finalLinha + 1):
 # Verificar o mês capturado na tela
     if verificaMes(linha,mesEsperado):
     # Verificar o status de pagamento
-        status = verificarStatus(linha)
+        status = verificarStatusPagamento(linha)
         print(f"Status para a linha {linha}: {status}")
         if status == "paga":
             pintarDeVerde(linha)
         elif status == "atrasada":
-            pintarDeVermelho(linha)
-        else:
             pintarDeAmarelo(linha)
+        else:
+            pintarDeVermelho(linha)
     else:
     # Se o mês não for o esperado, tenta verificar em uma nova coordenada
         if verificarMesAlternativo(linha, mesEsperado):
@@ -514,7 +514,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out300.xlsx")
+    wb.save("out451.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

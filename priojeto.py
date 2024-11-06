@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out.xlsx')
+wb = openpyxl.load_workbook('out800.xlsx')
 sheet = wb.active
 
 
@@ -353,8 +353,8 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "10"
 
 
-comecoLinha = 418
-finalLinha = 419
+comecoLinha = 847
+finalLinha = 847
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -376,6 +376,8 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     # Clica no lugar para dar 'ctrl + a'
+    
+    esperar_carregamento('assets/PCcarregando.png',0.5)
     pa.click(690,294)
     pa.hotkey('ctrl', 'a')
     time.sleep(0.3)
@@ -400,7 +402,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     # Clica em uma posição fixa se o resultado for False
         pa.click(623, 516)
         print("Clicou na posição fixa (623, 516) para tentar acessar os três pontos.")
-        resultado = clicarTresPontos(imagem_tres_pontos='assets/imagemtrespontos.jpg', regiao=(670, 328, 100, 100))
+        resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(670, 328, 100, 100))
     
         if resultado:
             print("Imagem dos três pontos localizada e clicada com sucesso.")
@@ -426,11 +428,11 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     
     if verificarSaldo(linha):
-            pintarDeAmarelo(linha)
-            print(f'Saldo encontrado na linha {linha}. Linha pintada de laranja.')
+            pintarDeVermelho(linha)
+            print(f'Saldo encontrado na linha {linha}. Linha pintada de vermeleho.')
             pa.hotkey('alt', 'left')  # Voltar com Alt + Left
-            #time.sleep(2)
-            esperar_carregamento('assets/carregando.jpg',0.5)
+            #time.sleep(0.5)
+            esperar_carregamento('assets/PCcarregando.png',0.5)
             continue  # Volta para o início do for
     
         
@@ -475,6 +477,7 @@ for linha in range(comecoLinha, finalLinha + 1):
             pa.scroll(500)  # Scroll para cima
             time.sleep(1)
         
+        
 
     else:
         # Se "faturamento" não for encontrado em nenhuma das coordenadas, pular linha
@@ -513,8 +516,8 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(0.5)
     pa.hotkey('alt', 'left')
     #time.sleep(7)
-    esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out451.xlsx")
+    #esperar_carregamento('assets/carregando.jpg',0.5)
+    wb.save("out900.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

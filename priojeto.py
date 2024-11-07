@@ -458,8 +458,8 @@ for linha in range(comecoLinha, finalLinha + 1):
         pa.scroll(-500)  # Scroll para baixo
         time.sleep(1)
 
-    # Se "faturamento" não for encontrado, verificar na coordenada alternativa
-    if verificarFaturamentoAlternativo(linha):
+        # Se "faturamento" não for encontrado, verificar na coordenada alternativa
+        if verificarFaturamentoAlternativo(linha):
         # Se encontrado na coordenada alternativa, realizar scroll e cliques adicionais
 
             imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Clique em nova coordenada
@@ -479,7 +479,7 @@ for linha in range(comecoLinha, finalLinha + 1):
         
         
 
-    else:
+        else:
         # Se "faturamento" não for encontrado em nenhuma das coordenadas, pular linha
             print(f"'Faturamento' não encontrado na linha alternativa {linha}.")
          # Pula para a próxima linha se nenhuma verificação passar

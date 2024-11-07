@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out800.xlsx')
+wb = openpyxl.load_workbook('OUT.xlsx')
 sheet = wb.active
 
 
@@ -102,7 +102,7 @@ def verificarMesAlternativo(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_mes = os.path.join(pasta_, f'{linha}_printMesAlt.png')
-        screenshot = pa.screenshot(region=(525,781, 100, 100))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(525,781, 100, 40))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -353,8 +353,8 @@ def verificarLinhaNaoLocalizada(linha):
 mesEsperado = "10"
 
 
-comecoLinha = 847
-finalLinha = 847
+comecoLinha = 2
+finalLinha = 2
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -517,7 +517,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out900.xlsx")
+    wb.save("out10.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

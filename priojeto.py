@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('OUT.xlsx')
+wb = openpyxl.load_workbook('out.alfa.xlsx')
 sheet = wb.active
 
 
@@ -351,10 +351,10 @@ def verificarLinhaNaoLocalizada(linha):
 
 # Mês esperado
 mesEsperado = "10"
-
+42999994746
 
 comecoLinha = 2
-finalLinha = 2
+finalLinha = 100
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -376,6 +376,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     # Clica no lugar para dar 'ctrl + a'
+    16994368036
     
     esperar_carregamento('assets/PCcarregando.png',0.5)
     pa.click(690,294)
@@ -457,6 +458,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     else:
         pa.scroll(-500)  # Scroll para baixo
         time.sleep(1)
+        verificarSaldo(linha)
 
         # Se "faturamento" não for encontrado, verificar na coordenada alternativa
         if verificarFaturamentoAlternativo(linha):
@@ -484,15 +486,15 @@ for linha in range(comecoLinha, finalLinha + 1):
             print(f"'Faturamento' não encontrado na linha alternativa {linha}.")
          # Pula para a próxima linha se nenhuma verificação passar
 
-# Verificar o mês capturado na tela
+    #Verificar o mês capturado na tela
     if verificaMes(linha,mesEsperado):
-    # Verificar o status de pagamento
+       
         status = verificarStatusPagamento(linha)
         print(f"Status para a linha {linha}: {status}")
         if status == "paga":
             pintarDeVerde(linha)
         elif status == "atrasada":
-            pintarDeAmarelo(linha)
+               pintarDeAmarelo(linha)
         else:
             pintarDeVermelho(linha)
     else:
@@ -517,7 +519,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out10.xlsx")
+    wb.save("out100.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('OUT.xlsx')
+wb = openpyxl.load_workbook('nov.xlsx')
 sheet = wb.active
 
 
@@ -350,11 +350,11 @@ def verificarLinhaNaoLocalizada(linha):
             return False
 
 # Mês esperado
-mesEsperado = "10"
+mesEsperado = "11"
 
 
 comecoLinha = 2
-finalLinha = 2
+finalLinha = 3
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -378,7 +378,9 @@ for linha in range(comecoLinha, finalLinha + 1):
     # Clica no lugar para dar 'ctrl + a'
     
     esperar_carregamento('assets/PCcarregando.png',0.5)
-    pa.click(690,294)
+    if pa.click(406,293):
+        print('Cliquei na que voce me pediu')
+ # Mostra a posição do mouse em tempo real
     pa.hotkey('ctrl', 'a')
     time.sleep(0.3)
 
@@ -517,7 +519,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out10.xlsx")
+    wb.save("NOV1.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

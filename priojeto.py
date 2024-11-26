@@ -12,7 +12,7 @@ import os
 
 
 # Carrega a planilha
-wb = openpyxl.load_workbook('out.alfa.xlsx')
+wb = openpyxl.load_workbook('out2.xlsx')
 sheet = wb.active
 
 
@@ -73,6 +73,12 @@ def pintarDeAmarelo(linha):
     for cell in sheet[linha]:
         cell.fill = amarelo
 
+def pintarDeRoxo(linha):
+    roxo = PatternFill(start_color="7030A0", end_color="7030A0", fill_type="solid")
+    for cell in sheet[linha]:
+        cell.fill = roxo
+
+
 # Função para verificar o mês
 def verificaMes(linha, mesEsperado):
     try:
@@ -119,6 +125,28 @@ def verificarMesAlternativo(linha, mesEsperado):
     except Exception as e:
         print(f"Ocorreu um erro ao verificar o mês alternativo na linha {linha}: {str(e)}")
         return False
+    
+def verificarMes3(linha, mesEsperado):
+    try:
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_mes = os.path.join(pasta_, f'{linha}_printMes3.png')
+        screenshot = pa.screenshot(region=(518,859, 100, 40))  # Ajuste a região conforme necessário
+        screenshot.save(screenshot_mes)
+
+        img = cv2.imread(screenshot_mes)
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+        _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+        extracted_text = pytesseract.image_to_string(thresh, config='--psm 6 -c tessedit_char_whitelist=0123456789/')
+        print(f"Mes3 {linha}: {extracted_text}")
+
+        return mesEsperado in extracted_text
+
+    except Exception as e:
+        print(f"Ocorreu um erro ao verificar o mês alternativo na linha {linha}: {str(e)}")
+        return False
 # Função para verificar se está "pago" ou "atrasada"
 def verificarStatusPagamento(linha):
     try:
@@ -159,6 +187,38 @@ def verificarStatusPagamentoAlternativo(linha):
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamentoAlt.png')
         screenshot = pa.screenshot(region=(1027,783, 130, 50))  # Ajuste a região conforme necessário
+        screenshot.save(screenshot_status)
+
+        img = cv2.imread(screenshot_status)
+
+        # Aumentar a resolução da imagem para melhorar a leitura
+        img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (1, 1), 0)
+        _, thresh = cv2.threshold(blurred, 150, 255, cv2.THRESH_BINARY_INV)
+
+        extracted_text = pytesseract.image_to_string(thresh, config='--psm 7')
+        print(f"Texto extraído para o pagamento na linha Alternativo {linha}: {extracted_text}")
+
+        if "paga" in extracted_text.lower():
+            print(f"Status 'paga' encontrado na linha {linha}.")
+            return "paga"
+        elif "atrasada" in extracted_text.lower():
+            print(f"Status 'atrasada' encontrado na linha {linha}.")
+            return "atrasada"
+        else:
+            print(f"pagamento desconhecido na linha alternativa {linha}: {extracted_text}")
+            return None
+
+    except Exception as e:
+        print(f"Ocorreu um erro ao verificar o status de pagamento na linha {linha}: {str(e)}")
+        return "erro"
+    
+def verificarStatusPagamento3(linha):
+    try:
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_status = os.path.join(pasta_, f'{linha}_printPagamento3.png')
+        screenshot = pa.screenshot(region=(1023,858, 130, 50))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -350,18 +410,18 @@ def verificarLinhaNaoLocalizada(linha):
             return False
 
 # Mês esperado
-mesEsperado = "10"
-42999994746
+mesEsperado = "10"  
 
-comecoLinha = 2
-finalLinha = 100
 
+
+comecoLinha = 638
+finalLinha = 686
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
 
 # Muda a tela
 pa.hotkey('alt', 'tab')
-time.sleep(0.3)
+time.sleep(0.3) 
 
 with open('telefone.txt', 'w') as f:
     for linha in range(comecoLinha, finalLinha + 1):
@@ -492,11 +552,12 @@ for linha in range(comecoLinha, finalLinha + 1):
         status = verificarStatusPagamento(linha)
         print(f"Status para a linha {linha}: {status}")
         if status == "paga":
-            pintarDeVerde(linha)
+            pintarDeRoxo(linha)
+            print("Pintei de roxo")
         elif status == "atrasada":
-               pintarDeAmarelo(linha)
+               pintarDeRoxo(linha)
         else:
-            pintarDeVermelho(linha)
+            pintarDeRoxo(linha)
     else:
     # Se o mês não for o esperado, tenta verificar em uma nova coordenada
         if verificarMesAlternativo(linha, mesEsperado):
@@ -507,6 +568,13 @@ for linha in range(comecoLinha, finalLinha + 1):
                 pintarDeVerde(linha)
             elif status == "atrasada":
                 pintarDeAmarelo(linha)
+        elif verificarMes3(linha, mesEsperado):
+                status = verificarStatusPagamento3(linha)
+                print(f"Status 3 para a linha {linha}: {status}")
+                if status == "paga":
+                    pintarDeVerde(linha)
+                elif status == "atrasada":
+                    pintarDeAmarelo(linha)
         else:
         # Se o mês ainda não for o esperado, pinta a linha de laranja
             pintarDeVermelho(linha)
@@ -519,7 +587,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save("out100.xlsx")
+    wb.save("out2.xlsx")
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

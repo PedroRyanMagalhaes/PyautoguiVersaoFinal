@@ -78,7 +78,7 @@ def verificaMes(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_mes = os.path.join(pasta_, f'{linha}_printMes.png')
-        screenshot = pa.screenshot(region=(524, 705, 100, 60))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(240,359, 100, 60))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -102,7 +102,7 @@ def verificarMesAlternativo(linha, mesEsperado):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_mes = os.path.join(pasta_, f'{linha}_printMesAlt.png')
-        screenshot = pa.screenshot(region=(525,781, 100, 40))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(241,435, 100, 40))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_mes)
 
         img = cv2.imread(screenshot_mes)
@@ -124,7 +124,7 @@ def verificarStatusPagamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamento.png')
-        screenshot = pa.screenshot(region=(1024,703, 100, 40))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(752,357, 100, 40))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -158,7 +158,7 @@ def verificarStatusPagamentoAlternativo(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_status = os.path.join(pasta_, f'{linha}_printPagamentoAlt.png')
-        screenshot = pa.screenshot(region=(1027,783, 130, 50))  # Ajuste a região conforme necessário
+        screenshot = pa.screenshot(region=(750,433, 130, 50))  # Ajuste a região conforme necessário
         screenshot.save(screenshot_status)
 
         img = cv2.imread(screenshot_status)
@@ -191,7 +191,7 @@ def verificarFaturamento(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_faturamento = os.path.join(pasta_, f'{linha}_printFaturamento.png')
-        screenshot = pa.screenshot(region=(491,474,400,100))  # Ajuste essa coordenada para a região correta
+        screenshot = pa.screenshot(region=(203,463,400,100))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_faturamento)
 
         img = cv2.imread(screenshot_faturamento)
@@ -282,7 +282,7 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
 
     # Tenta localizar a imagem na tela
     try:
-        posicao = pa.locateOnScreen(imagem_tres_pontos, confidence=0.5, region=regiao)
+        posicao = pa.locateOnScreen(imagem_tres_pontos, confidence=0.7, region=regiao)
         if posicao:
             print(f"Imagem dos três pontos localizada na posição: {posicao}")
         else:
@@ -293,7 +293,7 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
 
     if posicao is not None:
         # Clica no centro da imagem encontrada
-        pa.click(pa.center(regiao))
+        pa.click(pa.center(posicao))
         print("Clicou nos três pontinhos.")
         return True
     else:
@@ -391,7 +391,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     # Clicar nos 3 pontinhos
     time.sleep(0.5)
-    resultado = clicarTresPontos(imagem_tres_pontos='assets/Nottrespontos.PNG', regiao=(391,335, 100, 100))
+    resultado = clicarTresPontos(imagem_tres_pontos='assets/Nottrespontos.png', regiao=(390,333, 100, 80))
     
     
     if resultado:
@@ -399,7 +399,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     else:
     # Clica em uma posição fixa se o resultado for False
         pa.click(329,519)
-        resultado = clicarTresPontos(imagem_tres_pontos='assets/Nottrespontos.PNG', regiao=(390,333, 100, 80))
+        resultado = clicarTresPontos(imagem_tres_pontos='assets/Nottrespontos.png', regiao=(390,333, 100, 80))
     
         if resultado:
             print("Imagem dos três pontos localizada e clicada com sucesso.")
@@ -437,23 +437,23 @@ for linha in range(comecoLinha, finalLinha + 1):
 
   # Verificar "faturamento" após clicar em detalhes
     if verificarFaturamento(linha):
-        imagem_tres_pontos = 'assets/imagemtrespontos.jpg'  # Substitua pelo caminho real da sua imagem
-        regiao = (868,489, 200, 280)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
+        imagem_tres_pontos = 'assets/Nottrespontos.png'  # Substitua pelo caminho real da sua imagem
+        regiao = (590,489, 200, 200)  # Substitua pelas coordenadas (x, y, largura, altura) região que deseja capturar
     
     
         if clicarTresPontos(imagem_tres_pontos, regiao):
             time.sleep(0.5)  # Aguardar um tempo após clicar nos três pontos
 
         # Clicar em faturas
-        imagem_faturas = 'assets/imagemfaturas.jpg'  # Clicar em faturas
-        regiao = (522,496, 200, 200)
+        imagem_faturas = 'assets/Notfaturas.PNG'  # Clicar em faturas
+        regiao = (230,491, 200, 200)
 
         if clicarfaturas(imagem_faturas, regiao):
             time.sleep(0.5)
+            pa.scroll(-500)  # Scroll para baixo
+            time.sleep(1)
          
     else:
-        pa.scroll(-500)  # Scroll para baixo
-        time.sleep(1)
 
         # Se "faturamento" não for encontrado, verificar na coordenada alternativa
         if verificarFaturamentoAlternativo(linha):

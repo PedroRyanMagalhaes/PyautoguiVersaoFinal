@@ -288,12 +288,12 @@ def clicarTresPontos(imagem_tres_pontos, regiao=None):
         else:
             print("Imagem dos três pontos não encontrada na tela.")
     except Exception as e:
-        print(f"Erro ao tentar localizar a imagem: {e}")
+        print(f"Erro ao tentar localizar a imagem dos tres pontos: {e}")
         return False  # Retorna False se ocorrer qualquer erro
 
     if posicao is not None:
         # Clica no centro da imagem encontrada
-        pa.click(pa.center(posicao))
+        pa.click(pa.center(regiao))
         print("Clicou nos três pontinhos.")
         return True
     else:
@@ -354,7 +354,7 @@ mesEsperado = "11"
 
 
 comecoLinha = 2
-finalLinha = 3
+finalLinha = 2
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -368,8 +368,6 @@ with open('telefone.txt', 'w') as f:
         telefone = obterTelefone(linha)
         f.write(f"linha {linha}, Telefone {telefone}\n")
 
-
-
 for linha in range(comecoLinha, finalLinha + 1):
     telefone = obterTelefone(linha)  
     pyperclip.copy(telefone)  
@@ -378,9 +376,7 @@ for linha in range(comecoLinha, finalLinha + 1):
     # Clica no lugar para dar 'ctrl + a'
     
     esperar_carregamento('assets/PCcarregando.png',0.5)
-    if pa.click(406,293):
-        print('Cliquei na que voce me pediu')
- # Mostra a posição do mouse em tempo real
+    pa.click(406,293)
     pa.hotkey('ctrl', 'a')
     time.sleep(0.3)
 
@@ -390,21 +386,20 @@ for linha in range(comecoLinha, finalLinha + 1):
     time.sleep(0.3)
     
 
-    esperar_carregamento('assets/PCcarregando.png',0.5)
+    esperar_carregamento('assets/Notcarregando.PNG',0.5)
     
 
     # Clicar nos 3 pontinhos
     time.sleep(0.5)
-    resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(670,328, 100, 100))
+    resultado = clicarTresPontos(imagem_tres_pontos='assets/Nottrespontos.PNG', regiao=(391,335, 100, 100))
     
     
     if resultado:
         time.sleep(0.3)
     else:
     # Clica em uma posição fixa se o resultado for False
-        pa.click(623, 516)
-        print("Clicou na posição fixa (623, 516) para tentar acessar os três pontos.")
-        resultado = clicarTresPontos(imagem_tres_pontos='assets/PCtrespontos.PNG', regiao=(670, 328, 100, 100))
+        pa.click(329,519)
+        resultado = clicarTresPontos(imagem_tres_pontos='assets/Nottrespontos.PNG', regiao=(390,333, 100, 80))
     
         if resultado:
             print("Imagem dos três pontos localizada e clicada com sucesso.")
@@ -423,9 +418,9 @@ for linha in range(comecoLinha, finalLinha + 1):
             
 
     # Clicar em detalhes 
-    pa.click(546,380)
+    pa.click(260,382)
     time.sleep(0.5)
-    esperar_carregamento('assets/carregando.jpg',0.5)
+    esperar_carregamento('assets/Notcarregando.PNG',0.5)
     time.sleep(2)
 
     

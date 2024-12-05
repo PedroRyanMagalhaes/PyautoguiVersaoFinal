@@ -94,8 +94,8 @@ def verificaMes(linha, mesEsperado):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Salva a imagem convertida para escala de cinza (apenas para debug)
-        #gray_image_path = os.path.join(pasta_, f"{linha}_gray.png")
-        #cv2.imwrite(gray_image_path, gray)
+        gray_image_path = os.path.join(pasta_, f"{linha}_gray.png")
+        cv2.imwrite(gray_image_path, gray)
 
         # Extração de texto sem qualquer filtro adicional
         extracted_text = pytesseract.image_to_string(
@@ -159,7 +159,7 @@ def verificarMesAlternativo(linha, mesEsperado):
         print(f"MesAlt {linha}): {repr(extracted_text.strip())}")
 
         # Corrige a leitura "1/2024" para "11/2024"
-        if extracted_text.strip() == "1/2024":  
+        if extracted_text.strip() == "1/2024" :  
             extracted_text = "11/2024"
 
         # Exibe o texto corrigido
@@ -206,7 +206,7 @@ def verificarMes3(linha, mesEsperado):
         print(f"Mes3 {linha}): {repr(extracted_text.strip())}")
 
         # Corrige a leitura "1/2024" para "11/2024"
-        if extracted_text.strip() == "1/2024":  
+        if extracted_text.strip() == "1/2024" or "01/2024":  
             extracted_text = "11/2024"
 
         # Exibe o texto corrigido
@@ -505,11 +505,45 @@ def verificarLinhaNaoLocalizada(linha):
         else:
             return False
 
-'''def verificarSuspenso(linha):
+def verificarSuspenso(linha):
     try:
         pasta_ = criarPastaParaLinha(linha)
         screenshot_suspenso = os.path.join(pasta_, f'{linha}_printSuspenso.png')
-        screenshot = pa.screenshot(region=(310,442,100,100))  # Ajuste essa coordenada para a região correta
+        
+        # Ajuste de coordenadas
+        screenshot = pa.screenshot(region=(687,296, 80, 35))  # Ajuste a coordenada da região de captura
+        screenshot.save(screenshot_suspenso)
+
+
+        img = cv2.imread(screenshot_suspenso)
+
+         # Verifica se a imagem foi carregada corretamente
+        if img is None:
+            print("Falha ao carregar a imagem.")
+            return "erro"
+
+        # Converte para escala de cinza
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Extração de texto com pytesseract
+        extracted_text = pytesseract.image_to_string(gray, config='--psm 7')
+
+        # Exibe o texto extraído para diagnóstico
+        print(f"Texto extraído Suspenso {linha}: {repr(extracted_text)}")
+
+        if "suspenso" in extracted_text.lower():
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Ocorreu um erro ao verificar o 'suspenso'  na linha {linha}: {str(e)}")
+        return False
+    
+def verificarSuspenso2(linha):
+    try:
+        pasta_ = criarPastaParaLinha(linha)
+        screenshot_suspenso = os.path.join(pasta_, f'{linha}_printsuspenso.png')
+        screenshot = pa.screenshot(region=(698,296, 70, 35))  # Ajuste essa coordenada para a região correta
         screenshot.save(screenshot_suspenso)
 
         img = cv2.imread(screenshot_suspenso)
@@ -518,22 +552,25 @@ def verificarLinhaNaoLocalizada(linha):
         _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
 
         extracted_text = pytesseract.image_to_string(thresh)
-        print(f"Situaçao: {linha}: {extracted_text}")
+        print(f"Suspenso na  {linha}: {extracted_text}")
 
         if "suspenso" in extracted_text.lower():
+            print(f"'suspenso' encontrado na linha {linha}.")
             return True
         else:
             return False
+
     except Exception as e:
-        print(f"Ocorreu um erro ao verificar o 'suepenso'  na linha {linha}: {str(e)}")
+        print(f"Ocorreu um erro ao verificar o 'suspenso' na linha {linha}: {str(e)}")
         return False
-'''
+
+
 # Mês esperado
 mesEsperado = "10"
 
 
 comecoLinha = 250
-finalLinha = 250
+finalLinha = 500
 
 horario_inicial = datetime.datetime.now().strftime("%H:%M:%S")
 
@@ -553,11 +590,11 @@ for linha in range(comecoLinha, finalLinha + 1):
 
 
     # Clica no lugar para dar 'ctrl + a'
-    
+    time.sleep(1)
     esperar_carregamento('assets/Notcarregando.PNG',0.5)
+    time.sleep(1)
     pa.click(447,252)
     pa.hotkey('ctrl', 'a')
-    time.sleep(0.3)
 
     # Cola o telefone
     pa.hotkey('ctrl', 'v')
@@ -567,10 +604,7 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     esperar_carregamento('assets/Notcarregando.PNG',0.5)
 
-    #if verificarSuspenso(linha)
-
     
-
     # Clicar nos 3 pontinhos
     time.sleep(0.5)
     resultado = clicarTresPontos(imagem_tres_pontos='assets/Nottrespontos.png', regiao=(453,282, 100, 80))
@@ -601,12 +635,18 @@ for linha in range(comecoLinha, finalLinha + 1):
 
     # Clicar em detalhes 
     pa.click(350,324)
-    time.sleep(0.5)
     esperar_carregamento('assets/Notcarregando.PNG',0.5)
-    time.sleep(2)
+    time.sleep(15)
 
-    
-    if verificarSaldo(linha):
+   
+    if verificarSuspenso(linha):
+            print("encontrado Suspenso na situaçao")
+            pintarDeAmarelo(linha)
+            pa.hotkey('alt', 'left')
+            time.sleep(0.3)
+            continue
+    else:
+        if verificarSaldo(linha):
             pintarDeVermelho(linha)
             print(f'Saldo encontrado na linha {linha}. Linha pintada de vermeleho.')
             pa.hotkey('alt', 'left')  # Voltar com Alt + Left
@@ -695,13 +735,14 @@ for linha in range(comecoLinha, finalLinha + 1):
         # Se o mês ainda não for o esperado, pinta a linha de vermelho
             pintarDeVermelho(linha)
             print ("Pintei de vermelho, verificar depois por favor")
+        
 # Voltar para a tela anterior duas vezes
     pa.hotkey('alt', 'left')
     time.sleep(0.5)
     pa.hotkey('alt', 'left')
     #time.sleep(7)
     #esperar_carregamento('assets/carregando.jpg',0.5)
-    wb.save('Suspenso/OUT2.xlsx')
+    wb.save('Suspenso/OUT1.xlsx')
 
 print (f"Começou às {horario_inicial}")
 horario_final = datetime.datetime.now().strftime("%H:%M:%S")

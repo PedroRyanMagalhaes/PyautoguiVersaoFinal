@@ -239,8 +239,8 @@ options.add_argument("profile-directory=Default")  # Usar o perfil "Default"
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-linha_inicial = 423 #Linha que começa a automação
-linha_final = 790 #linha que finaliza automação 
+linha_inicial = 1790 #Linha que começa a automação
+linha_final = 2000 #linha que finaliza automação 
 
 # Acessar o site
 driver.get("https://vendasapp.claro.com.br/SVCv2/posicionamento/resultado-pesquisa")
@@ -248,10 +248,12 @@ driver.get("https://vendasapp.claro.com.br/SVCv2/posicionamento/resultado-pesqui
 print("Insira o código de autenticação no site e clique em 'Entrar'. Depois, pressione Enter aqui no terminal para continuar.")
 input("Pressione Enter quando estiver pronto...")
 
+NomeDaPlanilha = ("janeiro11.20.xlsx")
+
 # Ler a planilha com pandas
 mes_esperado = "01"
-planilha = pd.read_excel("janeiro11.20.xlsx")
-wb = load_workbook("janeiro11.20.xlsx")
+planilha = pd.read_excel(NomeDaPlanilha)
+wb = load_workbook(NomeDaPlanilha)
 ws = wb.active
 
 wait = WebDriverWait(driver, 10) 
@@ -292,7 +294,7 @@ for linha_excel in range(linha_inicial, linha_final + 1):
     elemento2 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-src="/SVCv2/static/media/action_detalhe.f8a2c81b.svg"]')))
     elemento2.click()
 
-    time.sleep(2)
+    time.sleep(1)
 
     if verificar_faturamento(driver):
         time.sleep(1)
@@ -325,13 +327,13 @@ for linha_excel in range(linha_inicial, linha_final + 1):
     else:
         for col in range(1, ws.max_column + 1):
             ws.cell(row=linha_excel, column=col).fill = fill_laranja  # Pinta toda a linha de laranja
-        print("Status: Não encontrado - Linha pintada de vermelho")
+        print("Status: Não encontrado - Linha pintada de Laranja")
 
     # Volta para a página anterior
     pa.hotkey("alt", "left") 
     pa.hotkey("alt", "left") 
     time.sleep(2)
-    wb.save("janeiro11.20.xlsx")
+    wb.save(NomeDaPlanilha)
 
 fim = time.time()
 totaltime = fim - inico
@@ -339,4 +341,4 @@ totalminute = (totaltime / 60)
 totalconferido = linha_final - linha_inicial
 
 print(f"Tempo total foi {totaltime:.2f} em segundos e {totalminute} em minutos para conferir {totalconferido}")
-driver.quit()
+

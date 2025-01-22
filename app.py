@@ -11,10 +11,15 @@ from openpyxl.styles import PatternFill
 import re
 from openpyxl import load_workbook
 
-
-fill_verde = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")  # Verde
-fill_amarelo = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")  # Amarelo
+#Verde para pagos
+fill_verde = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid") 
+# Amarelo para atrasados ou em aberto
+fill_amarelo = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+#Vermelho para Cancelado/Linha não localizada/Saldo
 fill_vermelho = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
+# Laranja para não encontrar o mes
+fill_laranja = PatternFill(start_color="FFFFA500", end_color="FFFFA500", fill_type="solid")
+
 
 #FUNCTIONS
 def verificar_faturamento(driver):
@@ -28,6 +33,7 @@ def verificar_faturamento(driver):
         print("Elemento 'FATURAMENTO' encontrado.")
         return True
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.faturamento.png")
         print(f"Erro ao verificar 'FATURAMENTO': {e}")
         return False
 
@@ -42,6 +48,8 @@ def clicar_trespontos(driver, indice=2):
         botao_trespontos.click()
         return True  # Retorna True se clicou com sucesso
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.trespontos1.png")
+
         print(f"Erro ao clicar nos três pontos: {e}")
         return False  # Retorna False se algo deu errado
 
@@ -59,6 +67,7 @@ def clicar_faturas(driver, indice=2):
         botoes_faturas[indice].click()
         return True  # Retorna True se clicou com sucesso
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.faturas.png")
         print(f"Erro ao clicar no botão de faturas: {e}")
         return False  # Retorna False se algo deu errado
 
@@ -83,6 +92,7 @@ def mes1(driver, mes_esperado):
             print("Formato de data inválido ou mês não encontrado.")
             return False
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.mes1.png")
         print(f"Erro ao procurar o mês no mes1: {e}")
         return True  # Retorna False se ocorrer algum erro
 
@@ -109,6 +119,7 @@ def mes2(driver, mes_esperado):
             print("Formato de data inválido ou mês não encontrado.")
             return False
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.mes2.png")
         print(f"Erro ao procurar o mês no mes2: {e}")
         return True  # Retorna False se ocorrer algum erro
 
@@ -134,6 +145,7 @@ def status1(driver):
         print(f"Texto encontrado no terceiro elemento não corresponde a um status válido: {texto}")
         return None
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.status1.png")
         print(f"Erro ao verificar o status no status1: {str(e)}")
         return None
 
@@ -158,6 +170,7 @@ def status2(driver):
         print(f"Texto encontrado no terceiro elemento não corresponde a um status válido: {texto}")
         return None
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.status2.png")
         print(f"Erro ao verificar o status no status1: {str(e)}")
         return None
 
@@ -177,6 +190,7 @@ def verificar_cancelado(driver):
             print("Status não é CANCELADO")
             return False
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.cancelado.png")
         print(f"Erro ao procurar o status CANCELADO: {e}")
         return False
 
@@ -188,10 +202,33 @@ def tres_pontos(driver):
         return True
         
     except Exception as e:
+        tirar_print(driver,f"{linha_excel}erro.trespontos2.png")
         print(f"Deu erro ao clicar nos três pontos: {e}")
         return False
+    
+def tirar_print(driver, nome_arquivo="erro_screenshot.png"):
+    # Tira a captura de tela e salva no arquivo especificado
+    driver.save_screenshot(nome_arquivo)
+    print(f"Captura de tela salva em {nome_arquivo}")
 
-
+def verificar_linha_nao_localizada(driver):
+    try:
+        # Espera até que o elemento seja visível na página
+        elemento = WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, '#layout > div > div.sc-VigVT.ldGKLs > h1'))
+        )
+        
+        # Converte o texto do elemento para minúsculas e verifica
+        if "linha não localizada" in elemento.text.lower():
+            print("Texto 'Linha não localizada' detectado.")
+            return True
+        else:
+            print("Texto esperado não encontrado no elemento.")
+            return False
+            
+    except Exception as e:
+        print(f"Erro ao verificar 'Linha não localizada': {e}")
+        return False
 
 
 # Configurar o caminho do perfil do Chrome
@@ -202,8 +239,8 @@ options.add_argument("profile-directory=Default")  # Usar o perfil "Default"
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-linha_inicial = 2 #Linha que começa a automação
-linha_final = 20 #linha que finaliza automação 
+linha_inicial = 271 #Linha que começa a automação
+linha_final = 790 #linha que finaliza automação 
 
 # Acessar o site
 driver.get("https://vendasapp.claro.com.br/SVCv2/posicionamento/resultado-pesquisa")
@@ -213,11 +250,11 @@ input("Pressione Enter quando estiver pronto...")
 
 # Ler a planilha com pandas
 mes_esperado = "01"
-planilha = pd.read_excel("Janeiro_Atualizado.xlsx")
-wb = load_workbook("Janeiro_Atualizado.xlsx")
+planilha = pd.read_excel("janeiro11.20.xlsx")
+wb = load_workbook("janeiro11.20.xlsx")
 ws = wb.active
 
-wait = WebDriverWait(driver, 10)  
+wait = WebDriverWait(driver, 7)  
 
 inico = time.time()
 
@@ -234,13 +271,19 @@ for linha_excel in range(linha_inicial, linha_final + 1):
     
     if tres_pontos(driver):
         print("Cliquei nos tres pontos")
-    else:
-    # Verifica se o status é "CANCELADO"
-        if verificar_cancelado(driver):
+    elif verificar_cancelado(driver):
         # Pinta a linha de vermelho se o status for "CANCELADO"
             for col in range(1, ws.max_column + 1):
                 ws.cell(row=linha_excel, column=col).fill = fill_vermelho  # Pinta toda a linha de vermelho
             print("Status CANCELADO - Linha pintada de vermelho")
+            continue  # Volta para o começo do for e passa para a próxima linha
+    else:
+        if verificar_linha_nao_localizada(driver):
+        # Pinta a linha de vermelho se o status for "CANCELADO"
+            for col in range(1, ws.max_column + 1):
+                ws.cell(row=linha_excel, column=col).fill = fill_vermelho  # Pinta toda a linha de vermelho
+            print("Linha não localizada - Linha pintada de vermelho")
+            pa.hotkey("alt","left")
             continue  # Volta para o começo do for e passa para a próxima linha
 
     
@@ -280,14 +323,14 @@ for linha_excel in range(linha_inicial, linha_final + 1):
         print(f"Status: {status} - Linha pintada de amarelo")
     else:
         for col in range(1, ws.max_column + 1):
-            ws.cell(row=linha_excel, column=col).fill = fill_vermelho  # Pinta toda a linha de vermelho
+            ws.cell(row=linha_excel, column=col).fill = fill_laranja  # Pinta toda a linha de laranja
         print("Status: Não encontrado - Linha pintada de vermelho")
 
     # Volta para a página anterior
     pa.hotkey("alt", "left") 
     pa.hotkey("alt", "left") 
     time.sleep(2)
-    wb.save("Janeiro_Atualizado.xlsx")
+    wb.save("janeiro11.20.xlsx")
 
 fim = time.time()
 totaltime = fim - inico

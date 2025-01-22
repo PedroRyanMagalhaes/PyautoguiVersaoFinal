@@ -239,7 +239,7 @@ options.add_argument("profile-directory=Default")  # Usar o perfil "Default"
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-linha_inicial = 271 #Linha que começa a automação
+linha_inicial = 423 #Linha que começa a automação
 linha_final = 790 #linha que finaliza automação 
 
 # Acessar o site
@@ -254,7 +254,7 @@ planilha = pd.read_excel("janeiro11.20.xlsx")
 wb = load_workbook("janeiro11.20.xlsx")
 ws = wb.active
 
-wait = WebDriverWait(driver, 7)  
+wait = WebDriverWait(driver, 10) 
 
 inico = time.time()
 
@@ -284,6 +284,7 @@ for linha_excel in range(linha_inicial, linha_final + 1):
                 ws.cell(row=linha_excel, column=col).fill = fill_vermelho  # Pinta toda a linha de vermelho
             print("Linha não localizada - Linha pintada de vermelho")
             pa.hotkey("alt","left")
+            time.sleep(1)
             continue  # Volta para o começo do for e passa para a próxima linha
 
     

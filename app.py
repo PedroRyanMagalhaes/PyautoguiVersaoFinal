@@ -10,6 +10,8 @@ import time
 from openpyxl.styles import PatternFill
 import re
 from openpyxl import load_workbook
+import random
+
 
 #Verde para pagos
 fill_verde = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid") 
@@ -25,7 +27,7 @@ fill_laranja = PatternFill(start_color="FFFFA500", end_color="FFFFA500", fill_ty
 def verificar_faturamento(driver):
     try:
         # Define o tempo máximo de espera
-        wait = WebDriverWait(driver, 10)  # 10 segundos de timeout
+        wait = WebDriverWait(driver, 30)  # 10 segundos de timeout
 
         # Aguarda até que o elemento com o texto 'FATURAMENTO' esteja presente
         elemento_faturamento = wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'FATURAMENTO')]")))
@@ -40,7 +42,7 @@ def verificar_faturamento(driver):
 def clicar_trespontos(driver, indice=2):
     try:
         # Espera até que o botão esteja clicável
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 30).until(
             EC.element_to_be_clickable((By.XPATH, f"(//*[@aria-label='Opções'])[{indice}]"))
         )
         # Localiza e clica no botão
@@ -195,6 +197,8 @@ def verificar_cancelado(driver):
         return False
 
 def tres_pontos(driver):
+    wait = WebDriverWait(driver, 30)  # 10 segundos de timeout
+
     try:
         # Espera até que o elemento esteja clicável
         elemento1 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-src="/SVCv2/static/media/card_acelerator.7e6bc4b5.svg"]')))
@@ -239,8 +243,8 @@ options.add_argument("profile-directory=Default")  # Usar o perfil "Default"
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-linha_inicial = 1790 #Linha que começa a automação
-linha_final = 2000 #linha que finaliza automação 
+linha_inicial = 3109 #Linha que começa a automação
+linha_final = 5000 #linha que finaliza automação 
 
 # Acessar o site
 driver.get("https://vendasapp.claro.com.br/SVCv2/posicionamento/resultado-pesquisa")
@@ -256,7 +260,7 @@ planilha = pd.read_excel(NomeDaPlanilha)
 wb = load_workbook(NomeDaPlanilha)
 ws = wb.active
 
-wait = WebDriverWait(driver, 10) 
+wait = WebDriverWait(driver, 30) 
 
 inico = time.time()
 
@@ -265,6 +269,7 @@ for linha_excel in range(linha_inicial, linha_final + 1):
     
     print(f"Processando telefone: {telefone} da linha {linha_excel}")
 
+    time.sleep(random.uniform(1, 2))  # Pausa entre 1 e 3 segundos
     campo_pesquisa = driver.find_element(By.ID, "filtro")
     campo_pesquisa.clear()  # Limpar o campo de pesquisa antes de inserir o próximo número
     campo_pesquisa.send_keys(str(telefone))
@@ -286,7 +291,7 @@ for linha_excel in range(linha_inicial, linha_final + 1):
                 ws.cell(row=linha_excel, column=col).fill = fill_vermelho  # Pinta toda a linha de vermelho
             print("Linha não localizada - Linha pintada de vermelho")
             pa.hotkey("alt","left")
-            time.sleep(1)
+            time.sleep(random.uniform(1,2))  # Pausa entre 1 e 3 segundos
             continue  # Volta para o começo do for e passa para a próxima linha
 
     
@@ -294,18 +299,23 @@ for linha_excel in range(linha_inicial, linha_final + 1):
     elemento2 = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-src="/SVCv2/static/media/action_detalhe.f8a2c81b.svg"]')))
     elemento2.click()
 
-    time.sleep(1)
+    time.sleep(random.uniform(1, 2))  # Pausa entre 1 e 3 segundos
 
     if verificar_faturamento(driver):
-        time.sleep(1)
+        time.sleep(random.uniform(1, 2))  # Pausa entre 1 e 3 segundos
         if clicar_trespontos(driver):
-            time.sleep(1)
+            time.sleep(random.uniform(1, 2))  # Pausa entre 1 e 3 segundos
             print("Cliquei agora no segundo três pontos")
             if clicar_faturas(driver):
-                time.sleep(1)
+                time.sleep(random.uniform(1,2))  # Pausa entre 1 e 3 segundos
                 print("Cliquei em faturas")
     else:
+        for col in range(1, ws.max_column + 1):
+                ws.cell(row=linha_excel, column=col).fill = fill_vermelho  # Pinta toda a linha de vermelho
+        pa.hotkey("alt","left")
+        time.sleep(random.uniform(1,2))  # Pausa entre 1 e 3 segundos
         print("Não achei faturamento")
+        continue  
         
     # Verificando o mês
     status = None
@@ -332,7 +342,7 @@ for linha_excel in range(linha_inicial, linha_final + 1):
     # Volta para a página anterior
     pa.hotkey("alt", "left") 
     pa.hotkey("alt", "left") 
-    time.sleep(2)
+    time.sleep(random.uniform(1, 2))  # Pausa entre 1 e 3 segundos
     wb.save(NomeDaPlanilha)
 
 fim = time.time()
@@ -341,4 +351,5 @@ totalminute = (totaltime / 60)
 totalconferido = linha_final - linha_inicial
 
 print(f"Tempo total foi {totaltime:.2f} em segundos e {totalminute} em minutos para conferir {totalconferido}")
+driver.quit(driver)
 

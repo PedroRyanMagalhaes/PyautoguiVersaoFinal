@@ -14,13 +14,15 @@ import random
 
 
 #Verde para pagos
-fill_verde = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid") 
+fill_verde = PatternFill(start_color="00B050", end_color="00B050", fill_type="solid") 
 # Amarelo para atrasados ou em aberto
 fill_amarelo = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 #Vermelho para Cancelado/Linha não localizada/Saldo
 fill_vermelho = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
 # Laranja para não encontrar o mes
 fill_laranja = PatternFill(start_color="FFFFA500", end_color="FFFFA500", fill_type="solid")
+#roxo
+fill_roxo = PatternFill(start_color="800080", end_color="800080", fill_type="solid")
 
 
 #FUNCTIONS
@@ -287,6 +289,16 @@ def verificar_linha_nao_localizada(driver):
         return False
 
 
+def verificar_fatura_inexistente(driver):
+    try:
+        elemento = driver.find_element("xpath", '//*[@id="pagamento-body"]/div/div[1]/div[3]/div/div[2]/div/div/div[2]/p')
+        if "Não existem faturas para este período" in elemento.text:
+            return True
+        return False
+    except Exception as e:  # Captura qualquer erro e exibe
+        print(f"Erro ao verificar fatura inexistente: {e}")
+        return False
+
 # Configurar o caminho do perfil do Chrome
 options = webdriver.ChromeOptions()
 #options.add_argument("user-data-dir=C:/Users/pedro/AppData/Local/Google/Chrome/User Data")  # Caminho da pasta User Data
@@ -295,8 +307,8 @@ options = webdriver.ChromeOptions()
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-linha_inicial = 3815 #Linha que começa a automação
-linha_final = 4100 #linha que finaliza automação 
+linha_inicial = 652 #Linha que começa a automação
+linha_final = 952 #linha que finaliza automação 
 
 # Acessar o site
 driver.get("https://vendasapp.claro.com.br/SVCv2/posicionamento/resultado-pesquisa")
@@ -304,10 +316,11 @@ driver.get("https://vendasapp.claro.com.br/SVCv2/posicionamento/resultado-pesqui
 print("Insira o código de autenticação no site e clique em 'Entrar'. Depois, pressione Enter aqui no terminal para continuar.")
 input("Pressione Enter quando estiver pronto...")
 
-NomeDaPlanilha = ("PyautoguiVersaoFinal/janeiro.xlsx")
+NomeDaPlanilha = ("janeiro.xlsx")
 
 # Ler a planilha com pandas
-mes_esperado = "12"
+mes_esperado = "01"
+mes_seguinte = "02"
 planilha = pd.read_excel(NomeDaPlanilha)
 wb = load_workbook(NomeDaPlanilha)
 ws = wb.active
@@ -371,32 +384,72 @@ for linha_excel in range(linha_inicial, linha_final + 1):
         
     # Verificando o mês
     status = None
-    if  mes1(driver, mes_esperado):
-            status = status1(driver)
-    elif mes2(driver, mes_esperado):
-            status = status2(driver)
-    elif mes3(driver, mes_esperado):
-            status = status3(driver)
-    else:
-        print("Não achei o mês")
+    mes_esperado_encontrado = False
+    mes_seguinte_encontrado = False
 
-    if status == "PAGA":
+    try:
+    # Verifica se o mês esperado foi encontrado
+        if mes1(driver, mes_esperado):
+          status = status1(driver)
+          mes_esperado_encontrado = True
+        elif mes2(driver, mes_esperado):
+            status = status2(driver)
+            mes_esperado_encontrado = True
+        elif mes3(driver, mes_esperado):
+            status = status3(driver)
+            mes_esperado_encontrado = True
+    except IndexError as e:
+        print(f"Erro ao procurar o mês esperado: {e}")
+        status = None
+        mes_esperado_encontrado = False
+
+# Se o mês esperado não foi encontrado, tenta encontrar o mês seguinte
+    if mes_esperado_encontrado == False:
+        try:
+            if mes1(driver, mes_seguinte) or mes2(driver, mes_seguinte) or mes3(driver, mes_seguinte):
+                print (f"Mes seguinte = {mes_seguinte}")
+                mes_seguinte_encontrado = True
+                status = "ROXO"  # Alterando o status para "ROXO" se o mês seguinte for encontrado
+        except IndexError as e:
+            print(f"Erro ao procurar o mês seguinte: {e}")
+            mes_seguinte_encontrado = False
+
+    if not mes_esperado_encontrado and not mes_seguinte_encontrado:
+        verificar_fatura_inexistente(driver)
+        print ("Fatura inexistente ")
+        status = "ROXO"
+
+
+# Verifica o que fazer baseado no status
+    if status == "ROXO":
+        print("Mês seguinte encontrado, mas mês esperado não")
         for col in range(1, ws.max_column + 1):
-            ws.cell(row=linha_excel, column=col).fill = fill_verde  # Pinta toda a linha de verde
-        print("Status: Paga - Linha pintada de verde")
-    elif status in ["ATRASADA", "EM ABERTO"]:
-        for col in range(1, ws.max_column + 1):
-            ws.cell(row=linha_excel, column=col).fill = fill_amarelo  # Pinta toda a linha de amarelo
-        print(f"Status: {status} - Linha pintada de amarelo")
+            ws.cell(row=linha_excel, column=col).fill = fill_roxo
+    elif mes_esperado_encontrado:
+        print("Mês esperado encontrado")
+        if status == "PAGA":
+            print("Status: Paga")
+            for col in range(1, ws.max_column + 1):
+                ws.cell(row=linha_excel, column=col).fill = fill_verde
+        elif status in ["ATRASADA", "EM ABERTO"]:
+            print(f"Status: {status}")
+            for col in range(1, ws.max_column + 1):
+                ws.cell(row=linha_excel, column=col).fill = fill_amarelo
+        else:
+            print("Status não encontrado")
+            for col in range(1, ws.max_column + 1):
+                ws.cell(row=linha_excel, column=col).fill = fill_laranja
     else:
+        print("Nenhum mês encontrado")
         for col in range(1, ws.max_column + 1):
-            ws.cell(row=linha_excel, column=col).fill = fill_laranja  # Pinta toda a linha de laranja
-        print("Status: Não encontrado - Linha pintada de Laranja")
+            ws.cell(row=linha_excel, column=col).fill = fill_laranja
+   
+
 
     # Volta para a página anterior
-    pa.hotkey("alt", "left") 
-    pa.hotkey("alt", "left") 
-    time.sleep(random.uniform(1, 2))  # Pausa entre 1 e 3 segundos
+    pa.hotkey("alt", "left")
+    pa.hotkey("alt", "left")
+    time.sleep(random.uniform(1, 2))
     wb.save(NomeDaPlanilha)
 
 fim = time.time()
@@ -404,6 +457,8 @@ totaltime = fim - inico
 totalminute = (totaltime / 60)
 totalconferido = linha_final - linha_inicial
 
-print(f"Tempo total foi {totaltime:.2f} em segundos e {totalminute} em minutos para conferir {totalconferido}")
+print(f"Tempo total foi {totaltime:.2f} segundos e {totalminute:.2f} minutos para conferir {totalconferido}")
 driver.quit()
+
+
 
